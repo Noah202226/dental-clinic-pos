@@ -1,0 +1,70 @@
+body {
+  display: flex;
+  flex-direction: column;
+  font-family: Roboto, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Segoe UI', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Open Sans', sans-serif;
+  color: #86a5b1;
+  background-color: #2f3241;
+}
+
+* {
+  padding: 0;
+  margin: 0;
+}
+
+dialog {
+  padding: 0.3rem;
+  border-radius: 0.3rem;
+  margin: 0;
+
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  opacity: 0;
+  transition: opacity 500s ease-in-out none;
+
+  z-index: 99999999 !important;
+}
+
+dialog:not([notopen]) {
+  opacity: 1;
+}
+
+.MuiSelect-select {
+  z-index: 99999999 !important;
+}
+.capitalize {
+  text-transform: capitalize;
+}
+
+.capitalize > :nth-child(2) > :nth-child(1) {
+  text-transform: capitalize;
+}
+
+button.MuiButtonGroup-grouped {
+  font-size: 9px;
+  text-transform: capitalize;
+}
+button.expense-button-grouped {
+  font-size: 12px;
+  text-transform: capitalize;
+}
+
+/* Customize the scrollbar track */
+.scrollable-div::-webkit-scrollbar {
+  width: 3px; /* Set the width of the scrollbar */
+  /* background-color: #f5f5f5; */
+  background-color: rgba(16, 60, 82, 0.5); /* Set the background color of the scrollbar track */
+}
+
+/* Customize the scrollbar thumb (the draggable handle) */
+.scrollable-div::-webkit-scrollbar-thumb {
+  background-color: rgba(50, 200, 150, 0.8);
+}
+
+/* Customize the scrollbar thumb on hover */
+.scrollable-div::-webkit-scrollbar-thumb:hover {
+  background-color: #555; /* Set the color of the scrollbar thumb on hover */
+}
