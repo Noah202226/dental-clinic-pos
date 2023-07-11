@@ -12,7 +12,6 @@ const NewPatientSchema = new Schema({
   patientName: String,
   patientAge: Number,
   patientGender: String,
-  placeOfBirth: String,
   nationality: String,
   civilStatus: String,
   occupation: String,
@@ -29,7 +28,9 @@ const SaleRecordSchema = new Schema({
   dateTransact: Date,
   treatmentRendered: String,
   treatmentType: String,
-  amountPaid: Number
+  amountPaid: Number,
+  toothNumber: String,
+  txNote: String
 })
 
 const InstallmentPatientSchema = new Schema({
@@ -64,11 +65,31 @@ const SettingSchema = new Schema({
   container2BgColor: String
 })
 
+const DropdownSchema = new Schema({
+  itemName: String,
+  ref: String
+})
+const DropdownItem = new Schema({
+  itemName: String,
+  ref: String
+})
+
 const Users = model('users', userSchema)
 const NewPatient = model('new-patient', NewPatientSchema)
 const NewSale = model('sales-record', SaleRecordSchema)
 const InstallmentPatient = model('installment-patient', InstallmentPatientSchema)
 const Expenses = model('expenses', ExpenseSchema)
 const SettingsData = model('settings', SettingSchema)
+const Dropdown = model('dropdown', DropdownSchema)
+const DropdownData = model('dropdown-item', DropdownItem)
 
-export { Users, NewPatient, NewSale, InstallmentPatient, Expenses, SettingsData }
+export {
+  Users,
+  NewPatient,
+  NewSale,
+  InstallmentPatient,
+  Expenses,
+  SettingsData,
+  Dropdown,
+  DropdownData
+}

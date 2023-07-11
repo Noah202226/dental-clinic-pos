@@ -199,7 +199,7 @@ const Home = ({ settingsInfo, userInfo }) => {
   }, [])
 
   return (
-    <Stack sx={{ background: settingsInfo?.homeBgColor }}>
+    <Stack sx={{ background: settingsInfo?.homeBgColor, height: '100%', width: '100%' }}>
       <Header settingsData={settingsInfo} userInfo={userInfo} />
 
       <Grid container spacing={1} p={1}>

@@ -1,4 +1,4 @@
-appId: com.electron.app
+appId: com.electron.app.dental.clinic.pos
 productName: dental-clinic-pos
 directories:
   buildResources: build

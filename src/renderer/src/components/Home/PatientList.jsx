@@ -610,10 +610,6 @@ const PatientList = ({ patients, settingsInfo }) => {
               </Typography>
             </Stack>
 
-            {/* <Stack sx={{ width: '100%', height: 150 }}>
-                <img src="../../resources/dentist.svg" alt="sample image" />
-              </Stack> */}
-
             <Stack spacing={2} mt={1}>
               <TextField
                 type="text"

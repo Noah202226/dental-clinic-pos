@@ -18,7 +18,16 @@ db.once('open', () => {
 })
 
 // Schemas
-import { Expenses, InstallmentPatient, NewPatient, NewSale, SettingsData, Users } from './schemas'
+import {
+  Dropdown,
+  DropdownData,
+  Expenses,
+  InstallmentPatient,
+  NewPatient,
+  NewSale,
+  SettingsData,
+  Users
+} from './schemas'
 
 function createWindow() {
   // Create the browser window.
@@ -133,6 +142,53 @@ ipcMain.on('new-setting', async (e, args) => {
     })
     console.log(stat)
     e.reply('settings-saved')
+  } catch (e) {
+    console.log(e)
+  }
+})
+
+// Dropdown
+ipcMain.on('getting-dropdown', async (e, args) => {
+  const data = await Dropdown.find()
+
+  try {
+    e.reply('dropdown-data', JSON.stringify(data))
+    console.log('data', data)
+  } catch (e) {
+    console.log('error getting treatment list', e)
+  }
+})
+ipcMain.on('get-treatment-items', async (e, args) => {
+  try {
+    const dataItem = await DropdownData.find({ ref: args })
+
+    e.reply('treatment-items', JSON.stringify(dataItem))
+  } catch (e) {
+    console.log('error getting treatment items', e)
+  }
+})
+
+ipcMain.on('new-dropdown', async (e, args) => {
+  console.log('saving new dropdown', args)
+  try {
+    const ref = (await Dropdown.find()).length
+    const data = new Dropdown({ itemName: args, ref: ref })
+
+    await data.save()
+
+    e.reply('dropdown-added', 'New dropdown saved')
+  } catch (e) {
+    console.log(e)
+  }
+})
+ipcMain.on('new-dropdown-item', async (e, args) => {
+  console.log('saving new dropdown item', args)
+  try {
+    const data = new DropdownData({ itemName: args.itemName, ref: args.ref })
+
+    await data.save()
+
+    e.reply('dropdown-item-added', args.ref)
   } catch (e) {
     console.log(e)
   }

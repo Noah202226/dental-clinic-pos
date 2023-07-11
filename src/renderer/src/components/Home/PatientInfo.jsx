@@ -86,7 +86,6 @@ const PatientInfo = ({ patients, settingsInfo }) => {
   const ageRef = useRef()
   const [genderRef, setGenderRef] = useState('')
 
-  const birthPlaceRef = useRef()
   const nationalityRef = useRef()
   const civilStatusRef = useRef()
 
@@ -127,6 +126,8 @@ const PatientInfo = ({ patients, settingsInfo }) => {
   const [amount, setamount] = useState('')
 
   const [treatmentType, settreatmentType] = useState('')
+  const [txNote, setTxNote] = useState()
+  const [toothNumber, setToothNumber] = useState()
 
   // Submit
   const submitForm = (e) => {
@@ -139,8 +140,7 @@ const PatientInfo = ({ patients, settingsInfo }) => {
       patientName: `${givenNameRef.current.children[1].children[0].value} ${middleNameRef.current.children[1].children[0].value} ${surnameRef.current.children[1].children[0].value}`,
       patientAge: ageRef.current.children[1].children[0].value,
       patientGender: genderRef,
-      placeOfBirth: birthPlaceRef.current.children[1].children[0].value,
-      nationality: nationalityRef.current.children[1].children[0].value,
+      nationality: nationalityRef.current.children[0].children[1].children[0].value,
       civilStatus: civilStatusRef.current.children[0].children[1].children[0].value,
       occupation: occupationRef.current.children[1].children[0].value,
       address: homeAddressRef.current.children[1].children[0].value,
@@ -155,6 +155,8 @@ const PatientInfo = ({ patients, settingsInfo }) => {
       patientName: `${givenNameRef.current.children[1].children[0].value} ${middleNameRef.current.children[1].children[0].value} ${surnameRef.current.children[1].children[0].value}`,
       treatmentRendered: selectedTreatment,
       treatmentType: treatmentTypeRef.current.children[0].children[0].value,
+      txNote: txNote,
+      toothNumber: toothNumber,
       amountPaid: amountRef.current.children[0].children[0].value
     }
 
@@ -173,8 +175,7 @@ const PatientInfo = ({ patients, settingsInfo }) => {
     surnameRef.current.children[1].children[0].value = ''
     ageRef.current.children[1].children[0].value = ''
     setGenderRef('male')
-    birthPlaceRef.current.children[1].children[0].value = ''
-    nationalityRef.current.children[1].children[0].value = ''
+    nationalityRef.current.children[0].children[1].children[0].value = ''
     civilStatusRef.current.children[0].children[1].children[0].value = ''
     occupationRef.current.children[1].children[0].value = ''
     homeAddressRef.current.children[1].children[0].value = ''
@@ -187,6 +188,8 @@ const PatientInfo = ({ patients, settingsInfo }) => {
     setSelectedTreatment('Oral Prophylaxis')
     amountRef.current.children[0].children[0].value = ''
     treatmentTypeRef.current.children[0].children[0].value = ''
+    setToothNumber('')
+    setTxNote('')
   }
 
   const newTransactionOnly = () => {
@@ -202,6 +205,8 @@ const PatientInfo = ({ patients, settingsInfo }) => {
       patientName: fullName,
       treatmentRendered: selectedTreatment,
       treatmentType: treatmentTypeRef.current.children[0].children[0].value,
+      txNote,
+      toothNumber,
       amountPaid: amount
     }
     ipcRenderer.send('new-sale-record', sale)
@@ -253,7 +258,6 @@ const PatientInfo = ({ patients, settingsInfo }) => {
       setgender(data.patientGender)
       setGenderRef(data.patientGender)
 
-      setbirthPlace(data.placeOfBirth)
       setnationality(data.nationality)
       setcivilStatus(data.civilStatus)
 
@@ -369,7 +373,7 @@ const PatientInfo = ({ patients, settingsInfo }) => {
         style={{
           position: 'relative',
           zIndex: 9999999,
-          width: 1000,
+          width: '100%',
           height: 700,
           backgroundImage: 'url("../../resources/dentist.svg")',
           backgroundSize: '200px',
@@ -389,75 +393,151 @@ const PatientInfo = ({ patients, settingsInfo }) => {
           </Button>
         </Stack>
 
-        <Stack flexDirection={'row'} alignItems={'start'} justifyContent={'space-between'} mb={1}>
-          <TextField type="text" label="Surname" ref={surnameRef} className="capitalize" />
-          <TextField type="text" label="Given Name" ref={givenNameRef} className="capitalize" />
-          <TextField type="text" label="Middle Name" ref={middleNameRef} className="capitalize" />
-        </Stack>
-
         <Stack flexDirection={'row'} alignItems={'center'} justifyContent={'space-between'} mb={1}>
-          <TextField type="number" label="Age" ref={ageRef} />
+          <Stack
+            flexDirection={'row'}
+            alignItems={'center'}
+            justifyContent={'space-between'}
+            mb={1}
+          >
+            <TextField
+              type="text"
+              label="Surname"
+              ref={surnameRef}
+              className="capitalize"
+              sx={{ mr: 2 }}
+            />
+            <TextField
+              type="text"
+              label="Given Name"
+              ref={givenNameRef}
+              className="capitalize"
+              sx={{ mr: 2 }}
+            />
+            <TextField
+              type="text"
+              label="Middle Name"
+              ref={middleNameRef}
+              className="capitalize"
+              sx={{ mr: 2 }}
+            />
+          </Stack>
 
-          <FormControl fullWidth sx={{ position: 'relative', zIndex: 2 }}>
-            <Select
-              labelId="demo-simple-select-label"
-              id="demo-simple-select"
-              native
-              sx={{ position: 'relative', zIndex: 2, width: 200 }}
-              value={genderRef}
-              onChange={(e) => setGenderRef(e.target.value)}
-            >
-              <option value={'male'}>MALE</option>
-              <option value={'female'}>FEMALE</option>
-            </Select>
-          </FormControl>
+          <Stack
+            flexDirection={'row'}
+            alignItems={'center'}
+            justifyContent={'space-between'}
+            mb={1}
+          >
+            <TextField type="number" label="Age" ref={ageRef} sx={{ mr: 2 }} />
+
+            <FormControl sx={{ position: 'relative', zIndex: 2 }}>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                native
+                sx={{ position: 'relative', zIndex: 2, width: 200 }}
+                value={genderRef}
+                onChange={(e) => setGenderRef(e.target.value)}
+              >
+                <option value={'male'}>MALE</option>
+                <option value={'female'}>FEMALE</option>
+              </Select>
+            </FormControl>
+          </Stack>
         </Stack>
 
         <Stack flexDirection={'row'} alignItems={'start'} justifyContent={'space-between'} mb={1}>
-          <TextField type="text" label="Birth Place" ref={birthPlaceRef} className="capitalize" />
-          <TextField type="text" label="Nationality" ref={nationalityRef} className="capitalize" />
-          {/* <TextField type="text" label="Civil Status" ref={civilStatusRef} className="capitalize" /> */}
+          <Stack
+            flexDirection={'row'}
+            alignItems={'center'}
+            justifyContent={'space-between'}
+            mb={1}
+          >
+            <Autocomplete
+              disablePortal
+              id="combo-box-demo-2"
+              options={['Filipino', 'Bisaya', 'Others']}
+              sx={{ width: 200, mr: 2 }}
+              renderInput={(params) => <TextField {...params} label="Nationality" />}
+              ref={nationalityRef}
+            />
+            {/* <TextField type="text" label="Civil Status" ref={civilStatusRef} className="capitalize" /> */}
 
-          <Autocomplete
-            disablePortal
-            id="combo-box-demo"
-            options={['Single', 'Married', 'Widowed']}
-            sx={{ width: 300 }}
-            renderInput={(params) => <TextField {...params} label="Civil Status" />}
-            ref={civilStatusRef}
-          />
+            <Autocomplete
+              disablePortal
+              id="combo-box-demo"
+              options={['Single', 'Married', 'Widowed']}
+              sx={{ width: 200, mr: 2 }}
+              renderInput={(params) => <TextField {...params} label="Civil Status" />}
+              ref={civilStatusRef}
+            />
+            <TextField type="text" label="Occupation" ref={occupationRef} className="capitalize" />
+          </Stack>
+
+          <Stack
+            flexDirection={'row'}
+            alignItems={'center'}
+            justifyContent={'space-between'}
+            mb={1}
+          >
+            <TextField
+              type="text"
+              label="Home Address"
+              ref={homeAddressRef}
+              className="capitalize"
+              fullWidth
+              sx={{ mr: 2 }}
+            />
+            <TextField type="number" label="No" ref={personalContactRef} className="capitalize" />
+          </Stack>
         </Stack>
 
         <Stack flexDirection={'row'} alignItems={'start'} justifyContent={'space-between'} mb={1}>
-          <TextField type="text" label="Occupation" ref={occupationRef} className="capitalize" />
-          <TextField type="text" label="Home Address" ref={homeAddressRef} className="capitalize" />
-          <TextField type="number" label="No" ref={personalContactRef} className="capitalize" />
-        </Stack>
+          <Stack
+            flexDirection={'row'}
+            alignItems={'center'}
+            justifyContent={'space-between'}
+            mb={1}
+          >
+            <TextField
+              type="text"
+              label="Person to contact"
+              ref={emergencyToContactRef}
+              className="capitalize"
+              sx={{ mr: 2 }}
+            />
+            <TextField
+              type="text"
+              label="Relation"
+              ref={relationRef}
+              className="capitalize"
+              sx={{ mr: 2 }}
+            />
+            <TextField
+              type="number"
+              label="No"
+              ref={emergencyToContactNoRef}
+              className="capitalize"
+              sx={{ mr: 2 }}
+            />
+          </Stack>
 
-        <Stack flexDirection={'row'} alignItems={'start'} justifyContent={'space-between'} mb={1}>
-          <TextField
-            type="text"
-            label="Person to contact"
-            ref={emergencyToContactRef}
-            className="capitalize"
-          />
-          <TextField type="text" label="Relation" ref={relationRef} className="capitalize" />
-          <TextField
-            type="number"
-            label="No"
-            ref={emergencyToContactNoRef}
-            className="capitalize"
-          />
-        </Stack>
-
-        <Stack flexDirection={'row'} alignItems={'start'} justifyContent={'space-between'} mb={1}>
-          <TextField
-            type="text"
-            label="Medical and Dental History"
-            fullWidth
-            ref={medicalHistoryRef}
-            className="capitalize"
-          />
+          <Stack
+            flexDirection={'row'}
+            alignItems={'start'}
+            justifyContent={'space-between'}
+            mb={1}
+            width={'50%'}
+          >
+            <TextField
+              type="text"
+              label="Medical and Dental History"
+              fullWidth
+              ref={medicalHistoryRef}
+              className="capitalize"
+            />
+          </Stack>
         </Stack>
 
         <Card sx={{ background: 'rgba(50,200,150, 0.5)', p: 1, borderRadius: 1, mt: 1 }}>
@@ -538,6 +618,21 @@ const PatientInfo = ({ patients, settingsInfo }) => {
 
               <FormHelperText>Treatment Type</FormHelperText>
             </FormControl>
+
+            <TextField
+              sx={{ marginRight: 10, width: '50%' }}
+              helperText="Tooth #"
+              value={toothNumber}
+              onChange={(e) => setToothNumber(e.target.value)}
+            />
+
+            <TextField
+              fullWidth
+              multiline
+              helperText="Note"
+              value={txNote}
+              onChange={(e) => setTxNote(e.target.value)}
+            />
           </Stack>
         </Card>
       </dialog>
@@ -573,27 +668,41 @@ const PatientInfo = ({ patients, settingsInfo }) => {
             >
               {patientTransactions.map((tx) => (
                 <Card key={tx._id} sx={{ mb: 0.5, p: 0.5 }}>
-                  {/* <Typography variant="h6" fontSize={15}>
-                      Date: {tx.patientName}
-                    </Typography> */}
-                  <Typography variant="h6" fontSize={15}>
-                    Date:{' '}
-                    {new Date(tx.dateTransact).toLocaleString(undefined, {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </Typography>
-                  <Typography variant="h6" fontSize={14}>
-                    Amount: {tx.amountPaid}
-                  </Typography>
-                  <Typography variant="h6" fontSize={14}>
-                    Treatment Rendered: {tx.treatmentRendered}
-                  </Typography>
-                  <Typography variant="h6" fontSize={14}>
-                    Treatment Type: {tx.treatmentType}
-                  </Typography>
+                  <Stack
+                    flexDirection={'row'}
+                    alignItems={'start'}
+                    justifyContent={'space-between'}
+                  >
+                    <Stack>
+                      <Typography variant="h6" fontSize={15}>
+                        Date:{' '}
+                        {new Date(tx.dateTransact).toLocaleString(undefined, {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </Typography>
+                      <Typography variant="h6" fontSize={14}>
+                        Amount: {tx.amountPaid}
+                      </Typography>
+                      <Typography variant="h6" fontSize={14}>
+                        Treatment Rendered: {tx.treatmentRendered}
+                      </Typography>
+                      <Typography variant="h6" fontSize={14}>
+                        Treatment Type: {tx.treatmentType}
+                      </Typography>
+                    </Stack>
+
+                    <Stack sx={{ width: '50%' }} alignContent={'start'} justifyContent={'start'}>
+                      <Typography variant="h6" fontSize={14}>
+                        Tooth #: {tx?.toothNumber}
+                      </Typography>
+                      <Typography variant="h6" textAlign={'start'} fontSize={14}>
+                        NOTE: {tx?.txNote}
+                      </Typography>
+                    </Stack>
+                  </Stack>
                 </Card>
               ))}
             </Paper>
@@ -628,8 +737,7 @@ const PatientInfo = ({ patients, settingsInfo }) => {
                 className="capitalize"
                 value={fullName}
                 onChange={(e) => setfullName(e.target.value)}
-
-                // value={patientInfo?.patientName}
+                InputLabelProps={{ shrink: true }}
               />
               <Stack
                 flexDirection={'row'}
@@ -657,6 +765,7 @@ const PatientInfo = ({ patients, settingsInfo }) => {
                 label="Age"
                 value={age}
                 onChange={(e) => setage(e.target.value)}
+                InputLabelProps={{ shrink: true }}
               />
 
               <FormControl fullWidth sx={{ position: 'relative', zIndex: 2 }}>
@@ -667,7 +776,7 @@ const PatientInfo = ({ patients, settingsInfo }) => {
                   value={gender}
                   onChange={(e) => setgender(e.target.value)}
                   native
-                  sx={{ position: 'relative', zIndex: 2, width: 200 }}
+                  sx={{ position: 'relative', zIndex: 2, width: 150, ml: 2 }}
                 >
                   {/* <MenuItem value={10}>Ten</MenuItem>
                 <MenuItem value={20}>Twenty</MenuItem>
@@ -677,27 +786,15 @@ const PatientInfo = ({ patients, settingsInfo }) => {
                   <option value={'female'}>FEMALE</option>
                 </Select>
               </FormControl>
-            </Stack>
 
-            <Stack
-              flexDirection={'row'}
-              alignItems={'start'}
-              justifyContent={'space-between'}
-              mb={1}
-            >
-              <TextField
-                type="text"
-                label="Birth Place"
-                value={birthPlace}
-                onChange={(e) => setbirthPlace(e.target.value)}
-                className="capitalize"
-              />
               <TextField
                 type="text"
                 label="Nationality"
                 value={nationality}
                 onChange={(e) => setnationality(e.target.value)}
                 className="capitalize"
+                InputLabelProps={{ shrink: true }}
+                sx={{ mr: 2 }}
               />
               <TextField
                 type="text"
@@ -705,6 +802,7 @@ const PatientInfo = ({ patients, settingsInfo }) => {
                 className="capitalize"
                 value={civilStatus}
                 onChange={(e) => setcivilStatus(e.target.value)}
+                InputLabelProps={{ shrink: true }}
               />
             </Stack>
 
@@ -720,6 +818,7 @@ const PatientInfo = ({ patients, settingsInfo }) => {
                 className="capitalize"
                 value={occupation}
                 onChange={(e) => setoccupation(e.target.value)}
+                InputLabelProps={{ shrink: true }}
               />
               <TextField
                 type="text"
@@ -727,12 +826,14 @@ const PatientInfo = ({ patients, settingsInfo }) => {
                 className="capitalize"
                 value={homeAddress}
                 onChange={(e) => sethomeAddress(e.target.value)}
+                InputLabelProps={{ shrink: true }}
               />
               <TextField
                 type="number"
                 label="No"
                 value={personalContact}
                 onChange={(e) => setpersonalContact(e.target.value)}
+                InputLabelProps={{ shrink: true }}
               />
             </Stack>
 
@@ -748,6 +849,7 @@ const PatientInfo = ({ patients, settingsInfo }) => {
                 className="capitalize"
                 value={emergencyToContact}
                 onChange={(e) => setemergencyToContact(e.target.value)}
+                InputLabelProps={{ shrink: true }}
               />
               <TextField
                 type="text"
@@ -755,12 +857,14 @@ const PatientInfo = ({ patients, settingsInfo }) => {
                 className="capitalize"
                 value={emergencyRelation}
                 onChange={(e) => setemergencyRelation(e.target.value)}
+                InputLabelProps={{ shrink: true }}
               />
               <TextField
                 type="number"
                 label="No"
                 value={emergencyToContactNo}
                 onChange={(e) => setemergencyToContactNo(e.target.value)}
+                InputLabelProps={{ shrink: true }}
               />
             </Stack>
 
@@ -777,6 +881,7 @@ const PatientInfo = ({ patients, settingsInfo }) => {
                 fullWidth
                 value={medicalHistory}
                 onChange={(e) => setmedicalHistory(e.target.value)}
+                InputLabelProps={{ shrink: true }}
               />
             </Stack>
 
@@ -816,63 +921,83 @@ const PatientInfo = ({ patients, settingsInfo }) => {
                 />
               </Stack>
 
-              <Stack
-                flexDirection={'row'}
-                alignItems={'start'}
-                justifyContent={'space-between'}
-                mb={1}
-              >
-                <FormControl fullWidth sx={{ position: 'relative', zIndex: 2 }}>
-                  <Select
-                    onChange={handleSelectChange}
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    value={selectedTreatment}
-                    native
-                    sx={{ position: 'relative', zIndex: 2, width: 200 }}
-                    fullWidth
-                  >
-                    <option value={'oral-prophylaxis'}>Oral Prophylaxis</option>
-                    <option value={'oral-surgery'}>Oral Surgery</option>
-                    <option value={'prosthodontics'}>Prosthodontics</option>
-                    <option value={'orthodontics'}>Orthodontics</option>
-                    <option value={'restorative'}>Restorative</option>
-                    <option value={'endodontics'}>Endodontics</option>
-                    <option value={'cosmetics'}>Cosmetics</option>
-                    <option value={'check-up'}>Checkup</option>
-                  </Select>
+              <Stack flexDirection={'column'} alignItems={'start'} justifyContent={'space-between'}>
+                <Stack
+                  flexDirection={'row'}
+                  alignItems={'center'}
+                  justifyContent={'space-between'}
+                  width={'100%'}
+                >
+                  <FormControl fullWidth sx={{ position: 'relative', zIndex: 2 }}>
+                    <Select
+                      onChange={handleSelectChange}
+                      labelId="demo-simple-select-label"
+                      id="demo-simple-select"
+                      value={selectedTreatment}
+                      native
+                      sx={{ position: 'relative', zIndex: 2, width: 200 }}
+                      fullWidth
+                    >
+                      <option value={'oral-prophylaxis'}>Oral Prophylaxis</option>
+                      <option value={'oral-surgery'}>Oral Surgery</option>
+                      <option value={'prosthodontics'}>Prosthodontics</option>
+                      <option value={'orthodontics'}>Orthodontics</option>
+                      <option value={'restorative'}>Restorative</option>
+                      <option value={'endodontics'}>Endodontics</option>
+                      <option value={'cosmetics'}>Cosmetics</option>
+                      <option value={'check-up'}>Checkup</option>
+                    </Select>
 
-                  <FormHelperText>Treatment Rendered</FormHelperText>
-                </FormControl>
+                    <FormHelperText>Treatment Rendered</FormHelperText>
+                  </FormControl>
 
-                <FormControl fullWidth sx={{ position: 'relative', zIndex: 2 }}>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    native
-                    sx={{ position: 'relative', zIndex: 2, width: 200 }}
-                    fullWidth
-                    value={treatmentType}
-                    onChange={(e) => settreatmentType(e.target.value)}
-                  >
-                    {options.length > 0 ? (
-                      options.map((option, index) => (
-                        <option key={index} value={option}>
-                          {option}
-                        </option>
-                      ))
-                    ) : (
-                      <>
-                        <option value={'With Flouride'}>With Flouride</option>
-                        <option value={'Without Flouride'}>Without Flouride</option>
-                        <option value={'Medical Certificate'}>Medical Certificate</option>
-                        <option value={'Moral Band'}>Moral Band</option>
-                      </>
-                    )}
-                  </Select>
+                  <FormControl fullWidth sx={{ position: 'relative', zIndex: 2 }}>
+                    <Select
+                      labelId="demo-simple-select-label"
+                      id="demo-simple-select"
+                      native
+                      sx={{ position: 'relative', zIndex: 2, width: 200 }}
+                      fullWidth
+                      value={treatmentType}
+                      onChange={(e) => settreatmentType(e.target.value)}
+                    >
+                      {options.length > 0 ? (
+                        options.map((option, index) => (
+                          <option key={index} value={option}>
+                            {option}
+                          </option>
+                        ))
+                      ) : (
+                        <>
+                          <option value={'With Flouride'}>With Flouride</option>
+                          <option value={'Without Flouride'}>Without Flouride</option>
+                          <option value={'Medical Certificate'}>Medical Certificate</option>
+                          <option value={'Moral Band'}>Moral Band</option>
+                        </>
+                      )}
+                    </Select>
 
-                  <FormHelperText>Treatment Type</FormHelperText>
-                </FormControl>
+                    <FormHelperText>Treatment Type</FormHelperText>
+                  </FormControl>
+                </Stack>
+
+                <Stack
+                  flexDirection={'row'}
+                  alignItems={'start'}
+                  justifyContent={'space-between'}
+                  width={'100%'}
+                >
+                  <TextField
+                    helperText="Tooth #"
+                    value={toothNumber}
+                    onChange={(e) => setToothNumber(e.target.value)}
+                  />
+                  <TextField
+                    helperText="Note"
+                    value={txNote}
+                    onChange={(e) => setTxNote(e.target.value)}
+                  />
+                </Stack>
               </Stack>
             </Card>
           </Grid>

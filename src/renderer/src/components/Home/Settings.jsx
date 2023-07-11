@@ -1,5 +1,6 @@
 import { DeleteForever, Save, Visibility, VisibilityOff } from '@mui/icons-material'
 import {
+  Box,
   Button,
   Card,
   CardContent,
@@ -13,17 +14,48 @@ import {
   Paper,
   Select,
   Stack,
+  Tab,
+  Tabs,
   TextField,
   Typography
 } from '@mui/material'
 import React, { useEffect, useRef, useState } from 'react'
+import PropTypes from 'prop-types'
 import { ToastContainer, toast } from 'react-toastify'
 
 const Settings = ({ settingModalRef, settingInfo }) => {
   const ipcRenderer = window.ipcRenderer
 
-  const [selectedFile, setSelectedFile] = useState(null)
-  const [imageData, setImageData] = useState(null)
+  const [tabValue, setTabValue] = useState(0)
+
+  function CustomTabPanel(props) {
+    const { children, tabValue, index, ...other } = props
+
+    return (
+      <div
+        role="tabpanel"
+        hidden={tabValue !== index}
+        id={`simple-tabpanel-${index}`}
+        aria-labelledby={`simple-tab-${index}`}
+        {...other}
+      >
+        {tabValue === index && <Box>{children}</Box>}
+      </div>
+    )
+  }
+
+  CustomTabPanel.propTypes = {
+    children: PropTypes.node,
+    index: PropTypes.number.isRequired,
+    tabValue: PropTypes.number.isRequired
+  }
+
+  function a11yProps(index) {
+    return {
+      id: `simple-tab-${index}`,
+      'aria-controls': `simple-tabpanel-${index}`
+    }
+  }
 
   // New user
 
@@ -69,6 +101,15 @@ const Settings = ({ settingModalRef, settingInfo }) => {
   const [accountType, setAccountType] = useState('')
 
   const [showPassword, setShowPassword] = useState(false)
+
+  // New Dropdown
+  const newDropwDownRef = useRef()
+  const newDropDownItemRef = useRef()
+  const [dropdownData, setDropdownData] = useState([])
+  const [dropDownItems, setDropDownItems] = useState([])
+  const [selectedTreatment, setSelectedTreatment] = useState()
+  const [newDropDownName, setNewDropDownName] = useState()
+  const [newDropDownItem, setNewDropDownItem] = useState()
 
   const saveSettings = () => {
     console.log(settingInfo._id)
@@ -116,10 +157,29 @@ const Settings = ({ settingModalRef, settingInfo }) => {
   }, [settingInfo])
   useEffect(() => {
     ipcRenderer.send('get-users')
+    ipcRenderer.send('getting-dropdown')
 
     ipcRenderer.on('all-users', (e, args) => {
       const users = JSON.parse(args)
       setUsers(users)
+    })
+    ipcRenderer.on('dropdown-data', (e, args) => {
+      const data = JSON.parse(args)
+
+      setDropdownData(data)
+      console.log('firstdata: ', data[0].ref)
+      setSelectedTreatment(data[0].ref)
+    })
+    ipcRenderer.on('dropdown-item', (e, args) => {
+      const items = JSON.parse(args)
+      setDropDownItems(items)
+    })
+    ipcRenderer.on('dropdown-added', (e, args) => {
+      toast.success(args, { position: 'top-center', containerId: 'settingsNofication' })
+
+      ipcRenderer.send('getting-dropdown')
+      setNewDropDownName('')
+      newDropwDownRef.current.close()
     })
 
     ipcRenderer.on('updated-user', (e, args) => {
@@ -165,23 +225,172 @@ const Settings = ({ settingModalRef, settingInfo }) => {
 
       newUserFormRef.current.close()
     })
+    ipcRenderer.on('treatment-items', (e, args) => {
+      const treatmentItems = JSON.parse(args)
+      setDropDownItems(treatmentItems)
+    })
+    ipcRenderer.on('dropdown-item-added', (e, args) => {
+      // ipcRenderer.send('getting-dropdown')
+      toast.success('Treatment item added.', {
+        position: 'top-center',
+        containerId: 'settingsNofication'
+      })
+
+      ipcRenderer.send('get-treatment-items', args)
+
+      newDropDownItemRef.current.close()
+      setNewDropDownItem('')
+    })
   }, [])
+
+  useEffect(() => {
+    ipcRenderer.send('get-treatment-items', selectedTreatment)
+  }, [selectedTreatment])
   return (
     <>
       <dialog
         ref={settingModalRef}
-        style={{ position: 'relative', zIndex: 9999999, width: 1200, height: 700 }}
+        style={{ position: 'relative', zIndex: 9999999, width: '100%', height: '100%' }}
       >
-        <Stack flexDirection={'row'} alignItems={'center'} justifyContent={'space-between'} p={1}>
-          <Typography variant="h4">Settings</Typography>
+        <Box sx={{ width: '100%' }}>
+          <Stack flexDirection={'row'} alignItems={'center'} justifyContent={'space-between'} p={1}>
+            <Typography variant="h4">Settings</Typography>
 
-          <Button variant="contained" color="error" onClick={() => settingModalRef.current.close()}>
-            Close
-          </Button>
-        </Stack>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={() => settingModalRef.current.close()}
+            >
+              Close
+            </Button>
+          </Stack>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs
+              value={tabValue}
+              onChange={(e, newValue) => setTabValue(newValue)}
+              textColor="secondary"
+              indicatorColor="secondary"
+              aria-label="secondary tabs example"
+            >
+              <Tab label="Personalization" {...a11yProps(0)} />
+              <Tab label="Users" {...a11yProps(1)} />
+              <Tab label="Dropdown Values" {...a11yProps(2)} />
+            </Tabs>
+          </Box>
 
-        <Grid container spacing={1}>
-          <Grid item xs={4} sx={{ backgroundColor: 'cyan' }}>
+          {/* Tab 1 */}
+          <CustomTabPanel tabValue={tabValue} index={0}>
+            <Grid item xs={7}>
+              <Typography variant="h4" m={1}>
+                Application Customize
+              </Typography>
+
+              <Stack
+                flexDirection={'column'}
+                alignItems={'center'}
+                justifyContent={'space-between'}
+                mt={1}
+              >
+                <Stack flexDirection={'row'} justifyContent={'space-between'} width={'100%'}>
+                  <TextField
+                    fullWidth
+                    label="Login Title"
+                    value={loginTitle}
+                    onChange={(e) => setLoginTitle(e.target.value)}
+                    sx={{ m: 1 }}
+                  />
+
+                  <TextField
+                    type="color"
+                    sx={{ m: 1 }}
+                    fullWidth
+                    label="Login Background Color"
+                    value={loginBgColor}
+                    onChange={(e) => setLoginBgColor(e.target.value)}
+                  />
+                </Stack>
+
+                <Stack flexDirection={'row'} justifyContent={'space-between'} width={'100%'} mt={1}>
+                  <TextField
+                    sx={{ m: 1 }}
+                    fullWidth
+                    label="App Title"
+                    value={appTitle}
+                    onChange={(e) => setAppTitle(e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                  />
+                  <TextField
+                    type="color"
+                    sx={{ m: 1 }}
+                    fullWidth
+                    label="Home Background Color"
+                    value={homeBgColor}
+                    onChange={(e) => setHomeBgColor(e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                  />
+                  <TextField
+                    type="color"
+                    sx={{ m: 1 }}
+                    fullWidth
+                    label="Font Color"
+                    value={homeFontColor}
+                    onChange={(e) => setHomeFontColor(e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                  />
+                </Stack>
+
+                <Stack flexDirection={'row'} justifyContent={'space-between'} width={'100%'} mt={1}>
+                  <TextField
+                    sx={{ m: 1 }}
+                    fullWidth
+                    label="Container 1 Title"
+                    value={container1}
+                    onChange={(e) => setContainer1(e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                  />
+                  <TextField
+                    type="color"
+                    sx={{ m: 1 }}
+                    fullWidth
+                    label="Container 1 Background Color"
+                    value={container1BgColor}
+                    onChange={(e) => setContainer1BgColor(e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                  />
+                </Stack>
+
+                <Stack flexDirection={'row'} justifyContent={'space-between'} width={'100%'} mt={3}>
+                  <TextField
+                    sx={{ m: 1 }}
+                    fullWidth
+                    label="Container 2 Title"
+                    value={container2}
+                    onChange={(e) => setContainer2(e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                  />
+
+                  <TextField
+                    type="color"
+                    sx={{ m: 1 }}
+                    fullWidth
+                    label="Container 2 Background Color"
+                    value={container2BgColor}
+                    onChange={(e) => setContainer2BgColor(e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                  />
+                </Stack>
+              </Stack>
+
+              <Stack flexDirection={'row'} justifyContent={'end'} m={2}>
+                <Button variant="contained" color="warning" size="large" onClick={saveSettings}>
+                  Save settings (App will restart)
+                </Button>
+              </Stack>
+            </Grid>
+          </CustomTabPanel>
+
+          {/* Tab 2 */}
+          <CustomTabPanel tabValue={tabValue} index={1}>
             <Stack flexDirection={'row'} justifyContent={'space-between'} p={1}>
               <Typography variant="h5">All Users</Typography>
               <Button
@@ -198,7 +407,7 @@ const Settings = ({ settingModalRef, settingInfo }) => {
               sx={{
                 padding: 0.5,
                 overflow: 'auto',
-                height: 550,
+                height: 500,
                 background: 'rgba(50,200,150, 0.5)'
               }}
             >
@@ -231,116 +440,85 @@ const Settings = ({ settingModalRef, settingInfo }) => {
                 </Card>
               ))}
             </Paper>
-          </Grid>
+          </CustomTabPanel>
 
-          <Grid item xs={7}>
-            <Typography variant="h4" m={2}>
-              Application Customize
-            </Typography>
+          {/* Tab 3 */}
+          <CustomTabPanel tabValue={tabValue} index={2}>
+            <Typography variant="h4">Drop down Values</Typography>
 
-            <Stack
-              flexDirection={'column'}
-              alignItems={'center'}
-              justifyContent={'space-between'}
-              mt={3}
-            >
-              <Stack flexDirection={'row'} justifyContent={'space-between'} width={'100%'}>
-                <TextField
-                  fullWidth
-                  label="Login Title"
-                  value={loginTitle}
-                  onChange={(e) => setLoginTitle(e.target.value)}
-                  sx={{ m: 1 }}
-                />
+            <Stack flexDirection={'row'}>
+              <Grid container>
+                <Grid item xs={6}>
+                  <Stack flexDirection={'row'}>
+                    <Typography variant="h6">Treatments</Typography>
+                    <Button variant="contained" onClick={() => newDropwDownRef.current.showModal()}>
+                      New
+                    </Button>
+                  </Stack>
 
-                <TextField
-                  type="color"
-                  sx={{ m: 1 }}
-                  fullWidth
-                  label="Login Background Color"
-                  value={loginBgColor}
-                  onChange={(e) => setLoginBgColor(e.target.value)}
-                />
-              </Stack>
+                  <FormControl fullWidth sx={{ position: 'relative', zIndex: 2, mb: 1 }}>
+                    <Select
+                      labelId="demo-simple-select-label"
+                      id="demo-simple-select"
+                      native
+                      sx={{ position: 'relative', zIndex: 2, width: 200 }}
+                      value={selectedTreatment}
+                      onChange={(e) => setSelectedTreatment(e.target.value)}
+                    >
+                      {dropdownData.length > 0 ? (
+                        dropdownData.map((option, index) => (
+                          <option key={index} value={option?.ref}>
+                            {option?.itemName}
+                          </option>
+                        ))
+                      ) : (
+                        <>
+                          <option value={''}>No Data</option>
+                        </>
+                      )}
+                    </Select>
+                    <FormHelperText>Treatment Rendered Options</FormHelperText>
+                  </FormControl>
+                </Grid>
 
-              <Stack flexDirection={'row'} justifyContent={'space-between'} width={'100%'} mt={3}>
-                <TextField
-                  sx={{ m: 1 }}
-                  fullWidth
-                  label="App Title"
-                  value={appTitle}
-                  onChange={(e) => setAppTitle(e.target.value)}
-                  InputLabelProps={{ shrink: true }}
-                />
-                <TextField
-                  type="color"
-                  sx={{ m: 1 }}
-                  fullWidth
-                  label="Home Background Color"
-                  value={homeBgColor}
-                  onChange={(e) => setHomeBgColor(e.target.value)}
-                  InputLabelProps={{ shrink: true }}
-                />
-                <TextField
-                  type="color"
-                  sx={{ m: 1 }}
-                  fullWidth
-                  label="Font Color"
-                  value={homeFontColor}
-                  onChange={(e) => setHomeFontColor(e.target.value)}
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Stack>
-
-              <Stack flexDirection={'row'} justifyContent={'space-between'} width={'100%'} mt={3}>
-                <TextField
-                  sx={{ m: 1 }}
-                  fullWidth
-                  label="Container 1 Title"
-                  value={container1}
-                  onChange={(e) => setContainer1(e.target.value)}
-                  InputLabelProps={{ shrink: true }}
-                />
-                <TextField
-                  type="color"
-                  sx={{ m: 1 }}
-                  fullWidth
-                  label="Container 1 Background Color"
-                  value={container1BgColor}
-                  onChange={(e) => setContainer1BgColor(e.target.value)}
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Stack>
-
-              <Stack flexDirection={'row'} justifyContent={'space-between'} width={'100%'} mt={3}>
-                <TextField
-                  sx={{ m: 1 }}
-                  fullWidth
-                  label="Container 2 Title"
-                  value={container2}
-                  onChange={(e) => setContainer2(e.target.value)}
-                  InputLabelProps={{ shrink: true }}
-                />
-
-                <TextField
-                  type="color"
-                  sx={{ m: 1 }}
-                  fullWidth
-                  label="Container 2 Background Color"
-                  value={container2BgColor}
-                  onChange={(e) => setContainer2BgColor(e.target.value)}
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Stack>
+                <Grid item xs={6}>
+                  <Stack flexDirection={'row'}>
+                    <Typography variant="h6">Treatments Types</Typography>
+                    <Button
+                      variant="contained"
+                      onClick={() => newDropDownItemRef.current.showModal()}
+                    >
+                      New
+                    </Button>
+                  </Stack>
+                  <FormControl fullWidth sx={{ position: 'relative', zIndex: 2, mb: 1 }}>
+                    <Select
+                      labelId="demo-simple-select-label"
+                      id="demo-simple-select"
+                      native
+                      sx={{ position: 'relative', zIndex: 2, width: 200 }}
+                      value={newUserAccountType}
+                      onChange={(e) => setNewUserAccountType(e.target.value)}
+                    >
+                      {dropDownItems.length > 0 ? (
+                        dropDownItems.map((option, index) => (
+                          <option key={index} value={option?.itemName}>
+                            {option?.itemName}
+                          </option>
+                        ))
+                      ) : (
+                        <>
+                          <option value={''}>No Data</option>
+                        </>
+                      )}
+                    </Select>
+                    <FormHelperText>Treatment Rendered Options</FormHelperText>
+                  </FormControl>
+                </Grid>
+              </Grid>
             </Stack>
-
-            <Stack flexDirection={'row'} justifyContent={'end'} m={2}>
-              <Button variant="contained" color="warning" size="large" onClick={saveSettings}>
-                Save settings (App will restart)
-              </Button>
-            </Stack>
-          </Grid>
-        </Grid>
+          </CustomTabPanel>
+        </Box>
         <ToastContainer
           autoClose={2000}
           pauseOnFocusLoss={false}
@@ -348,6 +526,47 @@ const Settings = ({ settingModalRef, settingInfo }) => {
           enableMultiContainer
           containerId={'settingsNofication'}
         />
+      </dialog>
+
+      <dialog ref={newDropwDownRef}>
+        <Typography variant="h2">New Downdown Data</Typography>
+
+        <TextField
+          label="Item Name"
+          value={newDropDownName}
+          onChange={(e) => setNewDropDownName(e.target.value)}
+        />
+
+        <Button
+          variant="contained"
+          onClick={() => {
+            ipcRenderer.send('new-dropdown', newDropDownName)
+          }}
+        >
+          Save
+        </Button>
+      </dialog>
+
+      <dialog ref={newDropDownItemRef}>
+        <Typography variant="h2">New Downdown Items</Typography>
+
+        <TextField
+          label="Item Name"
+          value={newDropDownItem}
+          onChange={(e) => setNewDropDownItem(e.target.value)}
+        />
+
+        <Button
+          variant="contained"
+          onClick={() => {
+            ipcRenderer.send('new-dropdown-item', {
+              itemName: newDropDownItem,
+              ref: selectedTreatment
+            })
+          }}
+        >
+          Save
+        </Button>
       </dialog>
 
       <dialog ref={modifyUserModalRef} style={{ padding: 20, margin: 1, width: 500 }}>
