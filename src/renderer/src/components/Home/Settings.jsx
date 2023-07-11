@@ -23,7 +23,16 @@ import React, { useEffect, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
 import { ToastContainer, toast } from 'react-toastify'
 
-const Settings = ({ settingModalRef, settingInfo }) => {
+const Settings = ({
+  settingModalRef,
+  settingInfo,
+  dropdownData,
+  dropDownItems,
+  selectedTreatment,
+  setSelectedTreatment,
+  selectedTreatmentItem,
+  setSelectedTreatmentItem
+}) => {
   const ipcRenderer = window.ipcRenderer
 
   const [tabValue, setTabValue] = useState(0)
@@ -105,9 +114,6 @@ const Settings = ({ settingModalRef, settingInfo }) => {
   // New Dropdown
   const newDropwDownRef = useRef()
   const newDropDownItemRef = useRef()
-  const [dropdownData, setDropdownData] = useState([])
-  const [dropDownItems, setDropDownItems] = useState([])
-  const [selectedTreatment, setSelectedTreatment] = useState()
   const [newDropDownName, setNewDropDownName] = useState()
   const [newDropDownItem, setNewDropDownItem] = useState()
 
@@ -157,23 +163,12 @@ const Settings = ({ settingModalRef, settingInfo }) => {
   }, [settingInfo])
   useEffect(() => {
     ipcRenderer.send('get-users')
-    ipcRenderer.send('getting-dropdown')
 
     ipcRenderer.on('all-users', (e, args) => {
       const users = JSON.parse(args)
       setUsers(users)
     })
-    ipcRenderer.on('dropdown-data', (e, args) => {
-      const data = JSON.parse(args)
 
-      setDropdownData(data)
-      console.log('firstdata: ', data[0].ref)
-      setSelectedTreatment(data[0].ref)
-    })
-    ipcRenderer.on('dropdown-item', (e, args) => {
-      const items = JSON.parse(args)
-      setDropDownItems(items)
-    })
     ipcRenderer.on('dropdown-added', (e, args) => {
       toast.success(args, { position: 'top-center', containerId: 'settingsNofication' })
 
@@ -225,10 +220,7 @@ const Settings = ({ settingModalRef, settingInfo }) => {
 
       newUserFormRef.current.close()
     })
-    ipcRenderer.on('treatment-items', (e, args) => {
-      const treatmentItems = JSON.parse(args)
-      setDropDownItems(treatmentItems)
-    })
+
     ipcRenderer.on('dropdown-item-added', (e, args) => {
       // ipcRenderer.send('getting-dropdown')
       toast.success('Treatment item added.', {
@@ -241,11 +233,26 @@ const Settings = ({ settingModalRef, settingInfo }) => {
       newDropDownItemRef.current.close()
       setNewDropDownItem('')
     })
+
+    ipcRenderer.on('treatment-item-deleted', (e, args) => {
+      toast.success('Treatment item deleted.', {
+        position: 'top-center',
+        containerId: 'settingsNofication'
+      })
+
+      ipcRenderer.send('get-treatment-items', args)
+    })
+
+    ipcRenderer.on('treatement-data-deleted', (e, args) => {
+      toast.success(args, {
+        position: 'top-center',
+        containerId: 'settingsNofication'
+      })
+
+      ipcRenderer.send('getting-dropdown')
+    })
   }, [])
 
-  useEffect(() => {
-    ipcRenderer.send('get-treatment-items', selectedTreatment)
-  }, [selectedTreatment])
   return (
     <>
       <dialog
@@ -444,79 +451,135 @@ const Settings = ({ settingModalRef, settingInfo }) => {
 
           {/* Tab 3 */}
           <CustomTabPanel tabValue={tabValue} index={2}>
-            <Typography variant="h4">Drop down Values</Typography>
+            <Box sx={{ padding: 1, mt: 2 }}>
+              <Typography variant="h4">Drop down Values</Typography>
 
-            <Stack flexDirection={'row'}>
-              <Grid container>
-                <Grid item xs={6}>
-                  <Stack flexDirection={'row'}>
-                    <Typography variant="h6">Treatments</Typography>
-                    <Button variant="contained" onClick={() => newDropwDownRef.current.showModal()}>
-                      New
-                    </Button>
-                  </Stack>
-
-                  <FormControl fullWidth sx={{ position: 'relative', zIndex: 2, mb: 1 }}>
-                    <Select
-                      labelId="demo-simple-select-label"
-                      id="demo-simple-select"
-                      native
-                      sx={{ position: 'relative', zIndex: 2, width: 200 }}
-                      value={selectedTreatment}
-                      onChange={(e) => setSelectedTreatment(e.target.value)}
+              <Stack flexDirection={'row'}>
+                <Grid container sx={{ backgroundColor: 'rgba(190,120,110, .5)' }}>
+                  <Grid item xs={6} sx={{ padding: 2, borderRight: '1px solid indigo' }}>
+                    <Stack
+                      flexDirection={'row'}
+                      justifyContent={'space-between'}
+                      alignItems={'center'}
                     >
-                      {dropdownData.length > 0 ? (
-                        dropdownData.map((option, index) => (
-                          <option key={index} value={option?.ref}>
-                            {option?.itemName}
-                          </option>
-                        ))
-                      ) : (
-                        <>
-                          <option value={''}>No Data</option>
-                        </>
-                      )}
-                    </Select>
-                    <FormHelperText>Treatment Rendered Options</FormHelperText>
-                  </FormControl>
+                      <Typography variant="h6">Treatments</Typography>
+                      <Button
+                        variant="contained"
+                        onClick={() => newDropwDownRef.current.showModal()}
+                      >
+                        New
+                      </Button>
+                    </Stack>
+
+                    <Stack
+                      flexDirection={'row'}
+                      alignItems={'start'}
+                      justifyContent={'space-between'}
+                      mt={2}
+                      sx={{ background: 'whitesmoke', padding: 2, borderRadius: '1rem' }}
+                    >
+                      <FormControl fullWidth sx={{ position: 'relative', zIndex: 2, mr: 2 }}>
+                        <Select
+                          labelId="demo-simple-select-label"
+                          id="demo-simple-select"
+                          native
+                          sx={{ position: 'relative', zIndex: 2 }}
+                          value={selectedTreatment}
+                          onChange={(e) => setSelectedTreatment(e.target.value)}
+                        >
+                          {dropdownData.length > 0 ? (
+                            dropdownData.map((option, index) => (
+                              <option key={index} value={option?.ref}>
+                                {option?.itemName}
+                              </option>
+                            ))
+                          ) : (
+                            <>
+                              <option value={''}>No Data</option>
+                            </>
+                          )}
+                        </Select>
+                        <FormHelperText>Treatment Rendered Options</FormHelperText>
+                      </FormControl>
+                      <Button
+                        variant="contained"
+                        color="error"
+                        onClick={() => {
+                          console.log(selectedTreatment)
+                          ipcRenderer.send('delete-treatment-data', selectedTreatment)
+                        }}
+                      >
+                        Delete Treatment
+                      </Button>
+                    </Stack>
+                  </Grid>
+
+                  <Grid item xs={6} sx={{ padding: 2 }}>
+                    <Stack
+                      flexDirection={'row'}
+                      justifyContent={'space-between'}
+                      alignItems={'center'}
+                    >
+                      <Typography variant="h6">Treatments Types</Typography>
+                      <Button
+                        variant="contained"
+                        onClick={() => newDropDownItemRef.current.showModal()}
+                      >
+                        New
+                      </Button>
+                    </Stack>
+
+                    <Stack
+                      flexDirection={'row'}
+                      alignItems={'start'}
+                      justifyContent={'space-between'}
+                      mt={2}
+                      sx={{ background: 'whitesmoke', padding: 2, borderRadius: '1rem' }}
+                    >
+                      <FormControl fullWidth sx={{ position: 'relative', zIndex: 2, mr: 2 }}>
+                        <Select
+                          labelId="demo-simple-select-label"
+                          id="demo-simple-select"
+                          native
+                          sx={{ position: 'relative', zIndex: 2 }}
+                          value={selectedTreatmentItem}
+                          onChange={(e) => {
+                            setSelectedTreatmentItem(e.target.value)
+                          }}
+                        >
+                          {dropDownItems.length > 0 ? (
+                            dropDownItems.map((option, index) => (
+                              <option key={index} value={option?.itemName}>
+                                {option?.itemName}
+                              </option>
+                            ))
+                          ) : (
+                            <>
+                              <option value={''}>No Data</option>
+                            </>
+                          )}
+                        </Select>
+                        <FormHelperText>Treatment Types Options</FormHelperText>
+                      </FormControl>
+
+                      <Button
+                        variant="contained"
+                        color="error"
+                        onClick={() => {
+                          console.log(selectedTreatment, selectedTreatmentItem)
+                          ipcRenderer.send('delete-treatment-item', {
+                            ref: selectedTreatment,
+                            itemName: selectedTreatmentItem
+                          })
+                        }}
+                      >
+                        Delete Item
+                      </Button>
+                    </Stack>
+                  </Grid>
                 </Grid>
-
-                <Grid item xs={6}>
-                  <Stack flexDirection={'row'}>
-                    <Typography variant="h6">Treatments Types</Typography>
-                    <Button
-                      variant="contained"
-                      onClick={() => newDropDownItemRef.current.showModal()}
-                    >
-                      New
-                    </Button>
-                  </Stack>
-                  <FormControl fullWidth sx={{ position: 'relative', zIndex: 2, mb: 1 }}>
-                    <Select
-                      labelId="demo-simple-select-label"
-                      id="demo-simple-select"
-                      native
-                      sx={{ position: 'relative', zIndex: 2, width: 200 }}
-                      value={newUserAccountType}
-                      onChange={(e) => setNewUserAccountType(e.target.value)}
-                    >
-                      {dropDownItems.length > 0 ? (
-                        dropDownItems.map((option, index) => (
-                          <option key={index} value={option?.itemName}>
-                            {option?.itemName}
-                          </option>
-                        ))
-                      ) : (
-                        <>
-                          <option value={''}>No Data</option>
-                        </>
-                      )}
-                    </Select>
-                    <FormHelperText>Treatment Rendered Options</FormHelperText>
-                  </FormControl>
-                </Grid>
-              </Grid>
-            </Stack>
+              </Stack>
+            </Box>
           </CustomTabPanel>
         </Box>
         <ToastContainer
@@ -528,45 +591,55 @@ const Settings = ({ settingModalRef, settingInfo }) => {
         />
       </dialog>
 
-      <dialog ref={newDropwDownRef}>
-        <Typography variant="h2">New Downdown Data</Typography>
+      <dialog ref={newDropwDownRef} style={{ padding: 20 }}>
+        <Typography variant="h6" textAlign={'center'}>
+          New Treatment
+        </Typography>
 
-        <TextField
-          label="Item Name"
-          value={newDropDownName}
-          onChange={(e) => setNewDropDownName(e.target.value)}
-        />
+        <Stack mt={2}>
+          <TextField
+            label="Treatment Name"
+            value={newDropDownName}
+            onChange={(e) => setNewDropDownName(e.target.value)}
+            sx={{ mb: 2 }}
+          />
 
-        <Button
-          variant="contained"
-          onClick={() => {
-            ipcRenderer.send('new-dropdown', newDropDownName)
-          }}
-        >
-          Save
-        </Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              ipcRenderer.send('new-dropdown', newDropDownName)
+            }}
+          >
+            Save
+          </Button>
+        </Stack>
       </dialog>
 
-      <dialog ref={newDropDownItemRef}>
-        <Typography variant="h2">New Downdown Items</Typography>
+      <dialog ref={newDropDownItemRef} style={{ padding: 20 }}>
+        <Typography variant="h6" textAlign={'center'}>
+          Treatment Item
+        </Typography>
 
-        <TextField
-          label="Item Name"
-          value={newDropDownItem}
-          onChange={(e) => setNewDropDownItem(e.target.value)}
-        />
+        <Stack mt={2}>
+          <TextField
+            label="Treatment Item"
+            value={newDropDownItem}
+            onChange={(e) => setNewDropDownItem(e.target.value)}
+            sx={{ mb: 2 }}
+          />
 
-        <Button
-          variant="contained"
-          onClick={() => {
-            ipcRenderer.send('new-dropdown-item', {
-              itemName: newDropDownItem,
-              ref: selectedTreatment
-            })
-          }}
-        >
-          Save
-        </Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              ipcRenderer.send('new-dropdown-item', {
+                itemName: newDropDownItem,
+                ref: selectedTreatment
+              })
+            }}
+          >
+            Save
+          </Button>
+        </Stack>
       </dialog>
 
       <dialog ref={modifyUserModalRef} style={{ padding: 20, margin: 1, width: 500 }}>

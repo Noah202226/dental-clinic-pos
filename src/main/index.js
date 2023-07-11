@@ -169,10 +169,9 @@ ipcMain.on('get-treatment-items', async (e, args) => {
 })
 
 ipcMain.on('new-dropdown', async (e, args) => {
-  console.log('saving new dropdown', args)
   try {
-    const ref = (await Dropdown.find()).length
-    const data = new Dropdown({ itemName: args, ref: ref })
+    // const ref = (await Dropdown.find()).length
+    const data = new Dropdown({ itemName: args, ref: args })
 
     await data.save()
 
@@ -182,7 +181,6 @@ ipcMain.on('new-dropdown', async (e, args) => {
   }
 })
 ipcMain.on('new-dropdown-item', async (e, args) => {
-  console.log('saving new dropdown item', args)
   try {
     const data = new DropdownData({ itemName: args.itemName, ref: args.ref })
 
@@ -191,6 +189,29 @@ ipcMain.on('new-dropdown-item', async (e, args) => {
     e.reply('dropdown-item-added', args.ref)
   } catch (e) {
     console.log(e)
+  }
+})
+
+ipcMain.on('delete-treatment-data', async (e, args) => {
+  console.log(args)
+  try {
+    await DropdownData.find().deleteMany({ ref: args })
+    await Dropdown.findOneAndDelete({ itemName: args })
+
+    console.log('All data deleted')
+    e.reply('treatement-data-deleted', 'Treatment data deleted')
+  } catch (e) {
+    console.log(e)
+  }
+})
+
+ipcMain.on('delete-treatment-item', async (e, args) => {
+  try {
+    await DropdownData.findOneAndDelete({ ref: args.ref, itemName: args.itemName })
+
+    e.reply('treatment-item-deleted', args.ref)
+  } catch (e) {
+    console.log('error deleting', e)
   }
 })
 
@@ -268,8 +289,7 @@ ipcMain.on('new-sale-record', async (e, args) => {
   try {
     await newSale.save()
     // await newPatient2.save()
-    console.log('New sale saved successfully!')
-    // Handle any success messages or redirects
+    e.reply('new-sale-saved', 'New transaction saved')
   } catch (error) {
     console.error('Error saving sale:', error)
     // Handle any error messages or error handling
@@ -293,6 +313,15 @@ ipcMain.on('get-patient-info', async (e, args) => {
   const patientData = await NewPatient.findOne({ _id: args })
 
   e.reply('patient-info', JSON.stringify(patientData))
+})
+ipcMain.on('get-patient-tx-info', async (e, args) => {
+  try {
+    const patientTxInfo = await NewSale.findById({ _id: args })
+
+    e.reply('patient-tx-info', JSON.stringify(patientTxInfo))
+  } catch (e) {
+    console.log(e)
+  }
 })
 
 ipcMain.on('delete-patient', async (e, args) => {

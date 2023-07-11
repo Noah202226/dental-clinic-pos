@@ -18,7 +18,14 @@ import {
 import { useEffect, useRef, useState } from 'react'
 import { ToastContainer, toast } from 'react-toastify'
 
-const PatientInfo = ({ patients, settingsInfo }) => {
+const PatientInfo = ({
+  patients,
+  settingsInfo,
+  dropdownData,
+  dropDownItems,
+  selectedTreatment,
+  setSelectedTreatment
+}) => {
   const ipcRenderer = window.ipcRenderer
 
   const [dateNow, setDateNow] = useState('')
@@ -36,9 +43,6 @@ const PatientInfo = ({ patients, settingsInfo }) => {
   const newPatientButtonRef = useRef()
   const patientInfoRef = useRef()
 
-  const [selectedTreatment, setSelectedTreatment] = useState('Oral Prophylaxis')
-  const [options, setOptions] = useState([])
-
   const [patientInfo, setPatientInfo] = useState('')
   const [patientTransactions, setPatientTransactions] = useState([])
 
@@ -47,35 +51,8 @@ const PatientInfo = ({ patients, settingsInfo }) => {
     setSelectedTreatment(selectedValue)
 
     // Update options based on the selected value
-    const updatedOptions = getUpdatedOptions(selectedValue)
-    setOptions(updatedOptions)
-  }
-
-  const getUpdatedOptions = (selectedValue) => {
-    // Perform the logic to retrieve the updated options based on the selected value
-    // This can involve making an API call or accessing a predefined set of options
-    console.log(selectedValue)
-    // Return the updated options
-    switch (selectedValue) {
-      case 'oral-prophylaxis':
-        return ['With Flouride', 'Without Flouride', 'Medical Certificate', 'Moral Bond']
-      case 'oral-surgery':
-        return ['Extraction', 'Surgery', 'Medicine', 'X-ray']
-      case 'prosthodontics':
-        return ['Jacket Crown', 'Denture']
-      case 'orthodontics':
-        return ['Brace Removal', 'Retainer', 'Brace Replacement/Moral Band']
-      case 'restorative':
-        return ['Anterior', 'Posterior Co', 'Posterior Gic']
-      case 'endodontics':
-        return ['X-ray', 'Post & Core', 'Anterior', 'Posterior']
-      case 'cosmetics':
-        return ['Veneers', 'Whitening']
-      case 'check-up':
-        return ['Checkup']
-      default:
-        return []
-    }
+    // const updatedOptions = getUpdatedOptions(selectedValue)
+    // setOptions(updatedOptions)
   }
 
   // inputs ref on new patient dialog
@@ -154,7 +131,7 @@ const PatientInfo = ({ patients, settingsInfo }) => {
       dateTransact: dateNow,
       patientName: `${givenNameRef.current.children[1].children[0].value} ${middleNameRef.current.children[1].children[0].value} ${surnameRef.current.children[1].children[0].value}`,
       treatmentRendered: selectedTreatment,
-      treatmentType: treatmentTypeRef.current.children[0].children[0].value,
+      treatmentType: treatmentType,
       txNote: txNote,
       toothNumber: toothNumber,
       amountPaid: amountRef.current.children[0].children[0].value
@@ -185,7 +162,6 @@ const PatientInfo = ({ patients, settingsInfo }) => {
     emergencyToContactNoRef.current.children[1].children[0].value = ''
     medicalHistoryRef.current.children[1].children[0].value = ''
 
-    setSelectedTreatment('Oral Prophylaxis')
     amountRef.current.children[0].children[0].value = ''
     treatmentTypeRef.current.children[0].children[0].value = ''
     setToothNumber('')
@@ -193,18 +169,11 @@ const PatientInfo = ({ patients, settingsInfo }) => {
   }
 
   const newTransactionOnly = () => {
-    if (treatmentTypeRef.current.children[0].children[0].value === '') {
-      toast.warn('Please select treatment type', {
-        position: 'bottom-right',
-        containerId: 'patientInfoNotify'
-      })
-    }
-
     const sale = {
       dateTransact: dateNow,
       patientName: fullName,
       treatmentRendered: selectedTreatment,
-      treatmentType: treatmentTypeRef.current.children[0].children[0].value,
+      treatmentType: treatmentType,
       txNote,
       toothNumber,
       amountPaid: amount
@@ -218,6 +187,21 @@ const PatientInfo = ({ patients, settingsInfo }) => {
     ipcRenderer.send('get-patient-info', id)
     ipcRenderer.send('get-sales-record', fullName)
     patientInfoRef.current.showModal()
+  }
+
+  const patientTxInfoRef = useRef()
+
+  const [patientTxDate, setPatientTxDate] = useState()
+  const [patientTxAmount, setPatientTxAmount] = useState()
+  const [patientTxTreatmentRendered, setPatientTxTreatmentRendered] = useState()
+  const [patientTxTreatmentType, setPatientTxTreatmentType] = useState()
+  const [patientTxToothNumber, setPatientTxToothNumber] = useState()
+  const [patientTxNote, setPatientTxNote] = useState()
+
+  const getTxInfo = (id) => {
+    ipcRenderer.send('get-patient-tx-info', id)
+
+    patientTxInfoRef.current.showModal()
   }
 
   const deletePatient = () => {
@@ -253,28 +237,28 @@ const PatientInfo = ({ patients, settingsInfo }) => {
       const data = JSON.parse(args)
       setPatientInfo(data)
 
-      setfullName(data.patientName)
-      setage(data.patientAge)
-      setgender(data.patientGender)
-      setGenderRef(data.patientGender)
+      setfullName(data?.patientName)
+      setage(data?.patientAge)
+      setgender(data?.patientGender)
+      setGenderRef(data?.patientGender)
 
-      setnationality(data.nationality)
-      setcivilStatus(data.civilStatus)
+      setnationality(data?.nationality)
+      setcivilStatus(data?.civilStatus)
 
-      setoccupation(data.occupation)
-      sethomeAddress(data.address)
-      setpersonalContact(data.personalContact)
+      setoccupation(data?.occupation)
+      sethomeAddress(data?.address)
+      setpersonalContact(data?.personalContact)
 
-      setemergencyToContact(data.emergencyToContact)
-      setemergencyRelation(data.emergencyRelation)
-      setemergencyToContactNo(data.emergencyToContactNo)
+      setemergencyToContact(data?.emergencyToContact)
+      setemergencyRelation(data?.emergencyRelation)
+      setemergencyToContactNo(data?.emergencyToContactNo)
 
-      setmedicalHistory(data.medicalHistory)
+      setmedicalHistory(data?.medicalHistory)
     })
 
     ipcRenderer.on('new-patient-record-saved', (e, args) => {
       toast.success(args, {
-        position: 'bottom-right',
+        position: 'top-center',
         containerId: 'homeToastifyContainer'
       })
 
@@ -285,7 +269,7 @@ const PatientInfo = ({ patients, settingsInfo }) => {
       patientInfoRef.current.close()
 
       toast.success('Patient Deleted.', {
-        position: 'bottom-right',
+        position: 'top-center',
         containerId: 'homeToastifyContainer'
       })
 
@@ -296,7 +280,7 @@ const PatientInfo = ({ patients, settingsInfo }) => {
       patientInfoRef.current.close()
 
       toast.success('Patient Info Updated.', {
-        position: 'bottom-right',
+        position: 'top-center',
         containerId: 'homeToastifyContainer'
       })
 
@@ -307,6 +291,24 @@ const PatientInfo = ({ patients, settingsInfo }) => {
       const data = JSON.parse(args)
 
       setPatientTransactions(data)
+    })
+
+    ipcRenderer.on('new-sale-saved', (e, args) => {
+      toast.success(args, {
+        position: 'top-center',
+        containerId: 'patientInfoNotify'
+      })
+    })
+
+    ipcRenderer.on('patient-tx-info', (e, args) => {
+      const txData = JSON.parse(args)
+
+      setPatientTxDate(txData?.dateTransact)
+      setPatientTxAmount(txData?.amountPaid)
+      setPatientTxTreatmentRendered(txData?.treatmentRendered)
+      setPatientTxTreatmentType(txData?.treatmentType)
+      setPatientTxToothNumber(txData?.toothNumber)
+      setPatientTxNote(txData?.txNote)
     })
   }, [])
   return (
@@ -574,14 +576,17 @@ const PatientInfo = ({ patients, settingsInfo }) => {
                 <MenuItem value={20}>Twenty</MenuItem>
                 <MenuItem value={30}>Thirty</MenuItem> */}
 
-                <option value={'oral-prophylaxis'}>Oral Prophylaxis</option>
-                <option value={'oral-surgery'}>Oral Surgery</option>
-                <option value={'prosthodontics'}>Prosthodontics</option>
-                <option value={'orthodontics'}>Orthodontics</option>
-                <option value={'restorative'}>Restorative</option>
-                <option value={'endodontics'}>Endodontics</option>
-                <option value={'cosmetics'}>Cosmetics</option>
-                <option value={'check-up'}>Checkup</option>
+                {dropdownData.length > 0 ? (
+                  dropdownData.map((option, index) => (
+                    <option key={index} value={option?.ref}>
+                      {option?.itemName}
+                    </option>
+                  ))
+                ) : (
+                  <>
+                    <option value={''}>No Data</option>
+                  </>
+                )}
               </Select>
 
               <FormHelperText>Treatment Rendered</FormHelperText>
@@ -594,24 +599,22 @@ const PatientInfo = ({ patients, settingsInfo }) => {
                 native
                 sx={{ position: 'relative', zIndex: 2, width: 200 }}
                 fullWidth
-                ref={treatmentTypeRef}
+                value={treatmentType}
+                onChange={(e) => settreatmentType(e.target.value)}
               >
                 {/* <MenuItem value={10}>Ten</MenuItem>
                 <MenuItem value={20}>Twenty</MenuItem>
                 <MenuItem value={30}>Thirty</MenuItem> */}
 
-                {options.length > 0 ? (
-                  options.map((option, index) => (
-                    <option key={index} value={option}>
-                      {option}
+                {dropDownItems.length > 0 ? (
+                  dropDownItems.map((option, index) => (
+                    <option key={index} value={option?.itemName}>
+                      {option?.itemName}
                     </option>
                   ))
                 ) : (
                   <>
-                    <option value={'With Flouride'}>With Flouride</option>
-                    <option value={'Without Flouride'}>Without Flouride</option>
-                    <option value={'Medical Certificate'}>Medical Certificate</option>
-                    <option value={'Moral Band'}>Moral Band</option>
+                    <option value={''}>No Data</option>
                   </>
                 )}
               </Select>
@@ -667,7 +670,20 @@ const PatientInfo = ({ patients, settingsInfo }) => {
               }}
             >
               {patientTransactions.map((tx) => (
-                <Card key={tx._id} sx={{ mb: 0.5, p: 0.5 }}>
+                <Card
+                  key={tx._id}
+                  sx={{
+                    mb: 1,
+                    cursor: 'pointer',
+                    transition: 'all 0.1s',
+                    '&:hover': {
+                      boxShadow: '4px 4px 8px 4px rgba(20,50,80,5)',
+                      marginLeft: 1
+                    },
+                    p: 1
+                  }}
+                  onClick={() => getTxInfo(tx._id)}
+                >
                   <Stack
                     flexDirection={'row'}
                     alignItems={'start'}
@@ -705,6 +721,52 @@ const PatientInfo = ({ patients, settingsInfo }) => {
                   </Stack>
                 </Card>
               ))}
+
+              <dialog ref={patientTxInfoRef}>
+                <Typography variant="h5">Patient transaction info - {patientTxAmount}</Typography>
+
+                <TextField
+                  type="date"
+                  value={new Date(patientTxDate)
+                    .toLocaleDateString(undefined, {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit'
+                    })
+                    .replace(/\//g, '-')}
+                  onChange={() => {}}
+                />
+                <TextField
+                  label="Amount"
+                  value={patientTxAmount}
+                  onChange={(e) => setPatientTxAmount(e.target.value)}
+                />
+                <TextField
+                  label="Treatment Rendered"
+                  value={patientTxTreatmentRendered}
+                  onChange={(e) => setPatientTxTreatmentRendered(e.target.value)}
+                  InputLabelProps={{ shrink: true }}
+                />
+                <TextField
+                  label="Treatment Type"
+                  value={patientTxTreatmentType}
+                  onChange={(e) => setPatientTxTreatmentType(e.target.value)}
+                  InputLabelProps={{ shrink: true }}
+                />
+                <TextField
+                  label="Tooth Number"
+                  value={patientTxToothNumber}
+                  onChange={(e) => setPatientTxToothNumber(e.target.value)}
+                  InputLabelProps={{ shrink: true }}
+                />
+                <TextField
+                  multiline
+                  label="Note"
+                  value={patientTxNote}
+                  onChange={(e) => setPatientTxNote(e.target.value)}
+                  InputLabelProps={{ shrink: true }}
+                />
+              </dialog>
             </Paper>
           </Grid>
 
@@ -938,14 +1000,17 @@ const PatientInfo = ({ patients, settingsInfo }) => {
                       sx={{ position: 'relative', zIndex: 2, width: 200 }}
                       fullWidth
                     >
-                      <option value={'oral-prophylaxis'}>Oral Prophylaxis</option>
-                      <option value={'oral-surgery'}>Oral Surgery</option>
-                      <option value={'prosthodontics'}>Prosthodontics</option>
-                      <option value={'orthodontics'}>Orthodontics</option>
-                      <option value={'restorative'}>Restorative</option>
-                      <option value={'endodontics'}>Endodontics</option>
-                      <option value={'cosmetics'}>Cosmetics</option>
-                      <option value={'check-up'}>Checkup</option>
+                      {dropdownData.length > 0 ? (
+                        dropdownData.map((option, index) => (
+                          <option key={index} value={option?.ref}>
+                            {option?.itemName}
+                          </option>
+                        ))
+                      ) : (
+                        <>
+                          <option value={''}>No Data</option>
+                        </>
+                      )}
                     </Select>
 
                     <FormHelperText>Treatment Rendered</FormHelperText>
@@ -961,18 +1026,15 @@ const PatientInfo = ({ patients, settingsInfo }) => {
                       value={treatmentType}
                       onChange={(e) => settreatmentType(e.target.value)}
                     >
-                      {options.length > 0 ? (
-                        options.map((option, index) => (
-                          <option key={index} value={option}>
-                            {option}
+                      {dropDownItems.length > 0 ? (
+                        dropDownItems.map((option, index) => (
+                          <option key={index} value={option?.itemName}>
+                            {option?.itemName}
                           </option>
                         ))
                       ) : (
                         <>
-                          <option value={'With Flouride'}>With Flouride</option>
-                          <option value={'Without Flouride'}>Without Flouride</option>
-                          <option value={'Medical Certificate'}>Medical Certificate</option>
-                          <option value={'Moral Band'}>Moral Band</option>
+                          <option value={''}>No Data</option>
                         </>
                       )}
                     </Select>

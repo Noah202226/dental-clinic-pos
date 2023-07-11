@@ -152,11 +152,35 @@ const Home = ({ settingsInfo, userInfo }) => {
   // Get transaction info
   const [txID, setTxID] = useState()
 
+  // Get selected treatment
+  const [dropdownData, setDropdownData] = useState([])
+  const [dropDownItems, setDropDownItems] = useState([])
+  const [selectedTreatment, setSelectedTreatment] = useState()
+  const [selectedTreatmentItem, setSelectedTreatmentItem] = useState()
+
   // load data
   useEffect(() => {
     // Example usage
     ipcRenderer.send('patients-records')
     ipcRenderer.send('installment-patient-records')
+    ipcRenderer.send('getting-dropdown')
+
+    ipcRenderer.on('dropdown-data', (e, args) => {
+      const data = JSON.parse(args)
+
+      setDropdownData(data)
+      console.log('firstdata: ', data[0].ref)
+      setSelectedTreatment(data[0].ref)
+    })
+    ipcRenderer.on('dropdown-item', (e, args) => {
+      const items = JSON.parse(args)
+      setDropDownItems(items)
+    })
+    ipcRenderer.on('treatment-items', (e, args) => {
+      const treatmentItems = JSON.parse(args)
+      setDropDownItems(treatmentItems)
+      setSelectedTreatmentItem(treatmentItems[0]?.itemName)
+    })
 
     ipcRenderer.on('patients', (e, args) => {
       const data = JSON.parse(args)
@@ -198,6 +222,10 @@ const Home = ({ settingsInfo, userInfo }) => {
     })
   }, [])
 
+  useEffect(() => {
+    ipcRenderer.send('get-treatment-items', selectedTreatment)
+  }, [selectedTreatment])
+
   return (
     <Stack sx={{ background: settingsInfo?.homeBgColor, height: '100%', width: '100%' }}>
       <Header settingsData={settingsInfo} userInfo={userInfo} />
@@ -228,6 +256,10 @@ const Home = ({ settingsInfo, userInfo }) => {
 
         <Grid item xs={6}>
           <PatientInfo
+            dropdownData={dropdownData}
+            dropDownItems={dropDownItems}
+            selectedTreatment={selectedTreatment}
+            setSelectedTreatment={setSelectedTreatment}
             patients={search === '' ? patientsRecord : filterPatientsData}
             settingsInfo={settingsInfo}
           />
@@ -646,7 +678,16 @@ const Home = ({ settingsInfo, userInfo }) => {
         lastDay={lastDay}
       />
 
-      <Settings settingModalRef={settingModalRef} settingInfo={settingsInfo} />
+      <Settings
+        settingModalRef={settingModalRef}
+        settingInfo={settingsInfo}
+        dropDownItems={dropDownItems}
+        dropdownData={dropdownData}
+        selectedTreatment={selectedTreatment}
+        setSelectedTreatment={setSelectedTreatment}
+        selectedTreatmentItem={selectedTreatmentItem}
+        setSelectedTreatmentItem={setSelectedTreatmentItem}
+      />
 
       <NewExpense expenseModalRef={expenseModalRef} />
     </Stack>
