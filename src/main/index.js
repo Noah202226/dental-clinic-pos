@@ -323,6 +323,22 @@ ipcMain.on('get-patient-tx-info', async (e, args) => {
     console.log(e)
   }
 })
+ipcMain.on('update-patient-sale-tx', async (e, args) => {
+  try {
+    await NewSale.findByIdAndUpdate(args.id, {
+      dateTransact: args.patientTxDate,
+      treatmentRendered: args.patientTxTreatmentRendered,
+      treatmentType: args.patientTxTreatmentType,
+      amountPaid: args.patientTxAmount,
+      toothNumber: args.patientTxToothNumber,
+      txNote: args.patientTxNote
+    })
+
+    e.reply('patient-sale-tx-updated', args.fullName)
+  } catch (e) {
+    console.log(e)
+  }
+})
 
 ipcMain.on('delete-patient', async (e, args) => {
   try {
@@ -445,7 +461,7 @@ ipcMain.on('get-filtered-sales-record', async (e, args) => {
   try {
     const data = await NewSale.find({
       dateTransact: { $gte: args.firstDay, $lte: args.lastDay }
-    }).sort({ dateTransact: 'asc' })
+    }).sort({ dateTransact: 'desc' })
     // Handle any success messages or redirects
     e.reply('filted-sales', JSON.stringify(data))
   } catch (error) {
@@ -501,6 +517,20 @@ ipcMain.on('delete-sale-tx', async (e, args) => {
     })
     // Handle any success messages or redirects
     e.reply('tx-deleted', 'Transaction deleted')
+  } catch (error) {
+    console.error('Error getting tx:', error)
+    // Handle any error messages or error handling
+  }
+})
+
+ipcMain.on('delete-patient-sale-tx', async (e, args) => {
+  console.log(args)
+  try {
+    await NewSale.findByIdAndDelete({
+      _id: args.id
+    })
+    // Handle any success messages or redirects
+    e.reply('patient-tx-deleted', { id: args.id, fullName: args.fullName })
   } catch (error) {
     console.error('Error getting tx:', error)
     // Handle any error messages or error handling

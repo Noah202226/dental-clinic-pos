@@ -15,6 +15,7 @@ import {
   TextField,
   Typography
 } from '@mui/material'
+import { format } from 'date-fns'
 import { useEffect, useRef, useState } from 'react'
 import { ToastContainer, toast } from 'react-toastify'
 
@@ -24,7 +25,9 @@ const PatientInfo = ({
   dropdownData,
   dropDownItems,
   selectedTreatment,
-  setSelectedTreatment
+  setSelectedTreatment,
+  selectedTreatmentItem,
+  setSelectedTreatmentItem
 }) => {
   const ipcRenderer = window.ipcRenderer
 
@@ -131,7 +134,7 @@ const PatientInfo = ({
       dateTransact: dateNow,
       patientName: `${givenNameRef.current.children[1].children[0].value} ${middleNameRef.current.children[1].children[0].value} ${surnameRef.current.children[1].children[0].value}`,
       treatmentRendered: selectedTreatment,
-      treatmentType: treatmentType,
+      treatmentType: selectedTreatmentItem,
       txNote: txNote,
       toothNumber: toothNumber,
       amountPaid: amountRef.current.children[0].children[0].value
@@ -163,7 +166,6 @@ const PatientInfo = ({
     medicalHistoryRef.current.children[1].children[0].value = ''
 
     amountRef.current.children[0].children[0].value = ''
-    treatmentTypeRef.current.children[0].children[0].value = ''
     setToothNumber('')
     setTxNote('')
   }
@@ -173,7 +175,7 @@ const PatientInfo = ({
       dateTransact: dateNow,
       patientName: fullName,
       treatmentRendered: selectedTreatment,
-      treatmentType: treatmentType,
+      treatmentType: selectedTreatmentItem,
       txNote,
       toothNumber,
       amountPaid: amount
@@ -190,7 +192,7 @@ const PatientInfo = ({
   }
 
   const patientTxInfoRef = useRef()
-
+  const [patientTxID, setPatientTxID] = useState()
   const [patientTxDate, setPatientTxDate] = useState()
   const [patientTxAmount, setPatientTxAmount] = useState()
   const [patientTxTreatmentRendered, setPatientTxTreatmentRendered] = useState()
@@ -302,7 +304,7 @@ const PatientInfo = ({
 
     ipcRenderer.on('patient-tx-info', (e, args) => {
       const txData = JSON.parse(args)
-
+      setPatientTxID(txData?._id)
       setPatientTxDate(txData?.dateTransact)
       setPatientTxAmount(txData?.amountPaid)
       setPatientTxTreatmentRendered(txData?.treatmentRendered)
@@ -310,7 +312,28 @@ const PatientInfo = ({
       setPatientTxToothNumber(txData?.toothNumber)
       setPatientTxNote(txData?.txNote)
     })
+
+    ipcRenderer.on('patient-tx-deleted', (e, args) => {
+      toast.success('Patient Tx Deleted', {
+        position: 'top-center',
+        containerId: 'patientInfoNotify'
+      })
+      console.log(args)
+
+      ipcRenderer.send('get-sales-record', args.fullName)
+      patientTxInfoRef.current.close()
+    })
+    ipcRenderer.on('patient-sale-tx-updated', (e, args) => {
+      toast.success('Patient Tx Updated', {
+        position: 'top-center',
+        containerId: 'patientInfoNotify'
+      })
+      console.log(args)
+      ipcRenderer.send('get-sales-record', args)
+      patientTxInfoRef.current.close()
+    })
   }, [])
+
   return (
     <>
       <Stack flexDirection={'row'} alignItems={'center'} justifyContent={'space-between'}>
@@ -565,9 +588,9 @@ const PatientInfo = ({
             <FormControl fullWidth sx={{ position: 'relative', zIndex: 2 }}>
               <Select
                 onChange={handleSelectChange}
+                value={selectedTreatment}
                 labelId="demo-simple-select-label"
                 id="demo-simple-select"
-                value={selectedTreatment}
                 native
                 sx={{ position: 'relative', zIndex: 2, width: 200 }}
                 fullWidth
@@ -599,8 +622,8 @@ const PatientInfo = ({
                 native
                 sx={{ position: 'relative', zIndex: 2, width: 200 }}
                 fullWidth
-                value={treatmentType}
-                onChange={(e) => settreatmentType(e.target.value)}
+                value={selectedTreatmentItem}
+                onChange={(e) => setSelectedTreatmentItem(e.target.value)}
               >
                 {/* <MenuItem value={10}>Ten</MenuItem>
                 <MenuItem value={20}>Twenty</MenuItem>
@@ -722,50 +745,107 @@ const PatientInfo = ({
                 </Card>
               ))}
 
-              <dialog ref={patientTxInfoRef}>
-                <Typography variant="h5">Patient transaction info - {patientTxAmount}</Typography>
+              <dialog ref={patientTxInfoRef} style={{ padding: 15 }}>
+                <Stack>
+                  <Stack
+                    flexDirection={'row'}
+                    alignItems={'center'}
+                    justifyContent={'space-between'}
+                    mb={2}
+                  >
+                    <Typography variant="h5">Patient transaction info</Typography>
+                    <Button
+                      variant="contained"
+                      color="error"
+                      onClick={() => patientTxInfoRef.current.close()}
+                    >
+                      Close
+                    </Button>
+                  </Stack>
 
-                <TextField
-                  type="date"
-                  value={new Date(patientTxDate)
-                    .toLocaleDateString(undefined, {
-                      year: 'numeric',
-                      month: '2-digit',
-                      day: '2-digit'
-                    })
-                    .replace(/\//g, '-')}
-                  onChange={() => {}}
-                />
-                <TextField
-                  label="Amount"
-                  value={patientTxAmount}
-                  onChange={(e) => setPatientTxAmount(e.target.value)}
-                />
-                <TextField
-                  label="Treatment Rendered"
-                  value={patientTxTreatmentRendered}
-                  onChange={(e) => setPatientTxTreatmentRendered(e.target.value)}
-                  InputLabelProps={{ shrink: true }}
-                />
-                <TextField
-                  label="Treatment Type"
-                  value={patientTxTreatmentType}
-                  onChange={(e) => setPatientTxTreatmentType(e.target.value)}
-                  InputLabelProps={{ shrink: true }}
-                />
-                <TextField
-                  label="Tooth Number"
-                  value={patientTxToothNumber}
-                  onChange={(e) => setPatientTxToothNumber(e.target.value)}
-                  InputLabelProps={{ shrink: true }}
-                />
-                <TextField
-                  multiline
-                  label="Note"
-                  value={patientTxNote}
-                  onChange={(e) => setPatientTxNote(e.target.value)}
-                  InputLabelProps={{ shrink: true }}
-                />
+                  <TextField
+                    type="date"
+                    value={format(
+                      new Date(patientTxDate ? patientTxDate : new Date(Date.now())),
+                      'yyyy-MM-dd'
+                    )}
+                    onChange={() => {}}
+                    sx={{ mb: 2 }}
+                  />
+
+                  <Stack flexDirection={'row'} sx={{ mb: 2 }}>
+                    <TextField
+                      label="Treatment Rendered"
+                      value={patientTxTreatmentRendered}
+                      onChange={(e) => setPatientTxTreatmentRendered(e.target.value)}
+                      InputLabelProps={{ shrink: true }}
+                      sx={{ mr: 2 }}
+                      disabled
+                    />
+                    <TextField
+                      label="Treatment Type"
+                      value={patientTxTreatmentType}
+                      onChange={(e) => setPatientTxTreatmentType(e.target.value)}
+                      InputLabelProps={{ shrink: true }}
+                      disabled
+                    />
+                  </Stack>
+
+                  <Stack flexDirection={'row'} sx={{ mb: 2 }}>
+                    <TextField
+                      label="Amount"
+                      value={patientTxAmount}
+                      onChange={(e) => setPatientTxAmount(e.target.value)}
+                      sx={{ mr: 2 }}
+                    />
+                    <TextField
+                      label="Tooth Number"
+                      value={patientTxToothNumber}
+                      onChange={(e) => setPatientTxToothNumber(e.target.value)}
+                      InputLabelProps={{ shrink: true }}
+                    />
+                  </Stack>
+
+                  <TextField
+                    multiline
+                    label="Note"
+                    value={patientTxNote}
+                    onChange={(e) => setPatientTxNote(e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                    sx={{ mb: 2 }}
+                  />
+
+                  <Stack flexDirection={'row'} justifyContent={'space-between'}>
+                    <Button
+                      variant="contained"
+                      color="warning"
+                      onClick={() =>
+                        ipcRenderer.send('update-patient-sale-tx', {
+                          id: patientTxID,
+                          patientTxDate,
+                          patientTxTreatmentRendered,
+                          patientTxTreatmentType,
+                          patientTxAmount,
+                          patientTxToothNumber,
+                          patientTxNote,
+                          fullName
+                        })
+                      }
+                    >
+                      Update
+                    </Button>
+
+                    <Button
+                      variant="contained"
+                      color="warning"
+                      onClick={() =>
+                        ipcRenderer.send('delete-patient-sale-tx', { id: patientTxID, fullName })
+                      }
+                    >
+                      Delete
+                    </Button>
+                  </Stack>
+                </Stack>
               </dialog>
             </Paper>
           </Grid>
@@ -1023,8 +1103,8 @@ const PatientInfo = ({
                       native
                       sx={{ position: 'relative', zIndex: 2, width: 200 }}
                       fullWidth
-                      value={treatmentType}
-                      onChange={(e) => settreatmentType(e.target.value)}
+                      value={selectedTreatmentItem}
+                      onChange={(e) => setSelectedTreatmentItem(e.target.value)}
                     >
                       {dropDownItems.length > 0 ? (
                         dropDownItems.map((option, index) => (
@@ -1053,11 +1133,14 @@ const PatientInfo = ({
                     helperText="Tooth #"
                     value={toothNumber}
                     onChange={(e) => setToothNumber(e.target.value)}
+                    sx={{ mr: 3 }}
                   />
                   <TextField
+                    fullWidth
                     helperText="Note"
                     value={txNote}
                     onChange={(e) => setTxNote(e.target.value)}
+                    multiline
                   />
                 </Stack>
               </Stack>

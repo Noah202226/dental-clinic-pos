@@ -178,6 +178,7 @@ const Home = ({ settingsInfo, userInfo }) => {
     })
     ipcRenderer.on('treatment-items', (e, args) => {
       const treatmentItems = JSON.parse(args)
+      console.log(treatmentItems, treatmentItems[0]?.itemName)
       setDropDownItems(treatmentItems)
       setSelectedTreatmentItem(treatmentItems[0]?.itemName)
     })
@@ -249,6 +250,12 @@ const Home = ({ settingsInfo, userInfo }) => {
       <Grid container spacing={1} p={1}>
         <Grid item xs={6}>
           <PatientList
+            dropdownData={dropdownData}
+            dropDownItems={dropDownItems}
+            selectedTreatment={selectedTreatment}
+            setSelectedTreatment={setSelectedTreatment}
+            selectedTreatmentItem={selectedTreatmentItem}
+            setSelectedTreatmentItem={setSelectedTreatmentItem}
             patients={search === '' ? installmentPatients : filteredInstallmentPatientsData}
             settingsInfo={settingsInfo}
           />
@@ -260,6 +267,8 @@ const Home = ({ settingsInfo, userInfo }) => {
             dropDownItems={dropDownItems}
             selectedTreatment={selectedTreatment}
             setSelectedTreatment={setSelectedTreatment}
+            selectedTreatmentItem={selectedTreatmentItem}
+            setSelectedTreatmentItem={setSelectedTreatmentItem}
             patients={search === '' ? patientsRecord : filterPatientsData}
             settingsInfo={settingsInfo}
           />
@@ -390,6 +399,7 @@ const Home = ({ settingsInfo, userInfo }) => {
                     alignItems={'center'}
                   >
                     <Typography>SALES</Typography>
+
                     <ButtonGroup size="small" variant="text">
                       <Button
                         size="small"
@@ -400,102 +410,21 @@ const Home = ({ settingsInfo, userInfo }) => {
                       >
                         All
                       </Button>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={() => {
-                          setfilterRows(rows)
-                          setfilterRows((prev) =>
-                            prev.filter((sale) => sale.treatmentRendered === 'oral-prophylaxis')
-                          )
-                        }}
-                      >
-                        Oral Prophylaxis
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={() => {
-                          setfilterRows(rows)
-                          setfilterRows((prev) =>
-                            prev.filter((sale) => sale.treatmentRendered === 'oral-surgery')
-                          )
-                        }}
-                      >
-                        Oral Surgery
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={() => {
-                          setfilterRows(rows)
-                          setfilterRows((prev) =>
-                            prev.filter((sale) => sale.treatmentRendered === 'restorative')
-                          )
-                        }}
-                      >
-                        Restorative
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={() => {
-                          setfilterRows(rows)
-                          setfilterRows((prev) =>
-                            prev.filter((sale) => sale.treatmentRendered === 'prosthodontics')
-                          )
-                        }}
-                      >
-                        Prosthodontics
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={() => {
-                          setfilterRows(rows)
-                          setfilterRows((prev) =>
-                            prev.filter((sale) => sale.treatmentRendered === 'orthodontics')
-                          )
-                        }}
-                      >
-                        Orthodontics
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={() => {
-                          setfilterRows(rows)
-                          setfilterRows((prev) =>
-                            prev.filter((sale) => sale.treatmentRendered === 'endodontics')
-                          )
-                        }}
-                      >
-                        Endodontics
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={() => {
-                          setfilterRows(rows)
-                          setfilterRows((prev) =>
-                            prev.filter((sale) => sale.treatmentRendered === 'cosmetics')
-                          )
-                        }}
-                      >
-                        Cosmetics
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={() => {
-                          setfilterRows(rows)
-                          setfilterRows((prev) =>
-                            prev.filter((sale) => sale.treatmentRendered === 'check-up')
-                          )
-                        }}
-                      >
-                        Check Up
-                      </Button>
+
+                      {dropdownData.map((dropdown) => (
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => {
+                            setfilterRows(rows)
+                            setfilterRows((prev) =>
+                              prev.filter((sale) => sale.treatmentRendered === dropdown?.itemName)
+                            )
+                          }}
+                        >
+                          {dropdown?.itemName}
+                        </Button>
+                      ))}
                     </ButtonGroup>
                   </Stack>
                 </caption>

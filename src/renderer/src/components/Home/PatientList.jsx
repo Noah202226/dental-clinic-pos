@@ -14,7 +14,16 @@ import {
 import { useEffect, useRef, useState } from 'react'
 import { ToastContainer, toast } from 'react-toastify'
 
-const PatientList = ({ patients, settingsInfo }) => {
+const PatientList = ({
+  patients,
+  settingsInfo,
+  dropdownData,
+  dropDownItems,
+  selectedTreatment,
+  setSelectedTreatment,
+  selectedTreatmentItem,
+  setSelectedTreatmentItem
+}) => {
   const ipcRenderer = window.ipcRenderer
 
   // For card gives rendering
@@ -35,16 +44,16 @@ const PatientList = ({ patients, settingsInfo }) => {
   const newPatientRef = useRef()
   const patientInfoRef = useRef()
 
-  const [selectedTreatment, setSelectedTreatment] = useState('')
-  const [options, setOptions] = useState([])
+  // const [selectedTreatment, setSelectedTreatment] = useState('')
+  // const [options, setOptions] = useState([])
 
   const handleSelectChange = (event) => {
     const selectedValue = event.target.value
     setSelectedTreatment(selectedValue)
 
-    // Update options based on the selected value
-    const updatedOptions = getUpdatedOptions(selectedValue)
-    setOptions(updatedOptions)
+    // // Update options based on the selected value
+    // const updatedOptions = getUpdatedOptions(selectedValue)
+    // setOptions(updatedOptions)
   }
 
   const getUpdatedOptions = (selectedValue) => {
@@ -115,7 +124,7 @@ const PatientList = ({ patients, settingsInfo }) => {
       patientAge: ageRef.current.children[1].children[0].value,
       patientAddress: patientAddresRef.current.children[1].children[0].value,
       treatmentRendered: selectedTreatment,
-      treatmentType: treatmentTypeRef.current.children[0].value,
+      treatmentType: selectedTreatmentItem,
       servicePrice: servicePriceRef.current.children[1].children[0].value,
       initialPay: downpaymentRef.current.children[1].children[0].value,
       remainingBal:
@@ -124,27 +133,24 @@ const PatientList = ({ patients, settingsInfo }) => {
       gives: []
     }
 
-    const sale = {
-      dateTransact: dateNow,
-      patientName: patientNameRef.current.children[1].children[0].value,
-      treatmentRendered: selectedTreatment,
-      treatmentType: treatmentTypeRef.current.children[0].value,
-      amountPaid: downpaymentRef.current.children[1].children[0].value
-    }
+    // const sale = {
+    //   dateTransact: dateNow,
+    //   patientName: patientNameRef.current.children[1].children[0].value,
+    //   treatmentRendered: selectedTreatment,
+    //   treatmentType: selectedTreatmentItem,
+    //   amountPaid: downpaymentRef.current.children[1].children[0].value
+    // }
 
-    ipcRenderer.send('new-sale-record', sale)
+    // ipcRenderer.send('new-sale-record', sale)
     ipcRenderer.send('new-installment-patient', data)
 
     // Reset Fields
     patientNameRef.current.children[1].children[0].value = ''
     ageRef.current.children[1].children[0].value = ''
     patientAddresRef.current.children[1].children[0].value = ''
-    setSelectedTreatment('Oral Prophylaxis')
-    treatmentTypeRef.current.children[0].value = ''
 
-    servicePriceRef.current.children[1].children[0].value = ''
-    treatmentTypeRef.current.children[0].value = ''
-    downpaymentRef.current.children[1].children[0].value = ''
+    // servicePriceRef.current.children[1].children[0].value = ''
+    // downpaymentRef.current.children[1].children[0].value = ''
   }
 
   const getPatientInfo = (id, fullName) => {
@@ -198,15 +204,15 @@ const PatientList = ({ patients, settingsInfo }) => {
       remainingBal: remainingBal - newTransactionAmount
     })
 
-    const sale = {
-      dateTransact: dateNow,
-      patientName: patientName,
-      treatmentRendered: treatmentRendered,
-      treatmentType: treatmentType,
-      amountPaid: newTransactionAmount
-    }
+    // const sale = {
+    //   dateTransact: dateNow,
+    //   patientName: patientName,
+    //   treatmentRendered: treatmentRendered,
+    //   treatmentType: treatmentType,
+    //   amountPaid: newTransactionAmount
+    // }
 
-    ipcRenderer.send('new-sale-record', sale)
+    // ipcRenderer.send('new-sale-record', sale)
   }
 
   useEffect(() => {
@@ -472,25 +478,24 @@ const PatientList = ({ patients, settingsInfo }) => {
           <FormControl fullWidth sx={{ position: 'relative', zIndex: 2 }}>
             <Select
               onChange={handleSelectChange}
+              value={selectedTreatment}
               labelId="demo-simple-select-label"
               id="demo-simple-select"
-              value={selectedTreatment}
               native
               sx={{ position: 'relative', zIndex: 2, width: 200 }}
               fullWidth
             >
-              {/* <MenuItem value={10}>Ten</MenuItem>
-                <MenuItem value={20}>Twenty</MenuItem>
-                <MenuItem value={30}>Thirty</MenuItem> */}
-
-              <option value={'oral-prophylaxis'}>Oral Prophylaxis</option>
-              <option value={'oral-surgery'}>Oral Surgery</option>
-              <option value={'prosthodontics'}>Prosthodontics</option>
-              <option value={'orthodontics'}>Orthodontics</option>
-              <option value={'restorative'}>Restorative</option>
-              <option value={'endodontics'}>Endodontics</option>
-              <option value={'cosmetics'}>Cosmetics</option>
-              <option value={'check-up'}>Checkup</option>
+              {dropdownData.length > 0 ? (
+                dropdownData.map((option, index) => (
+                  <option key={index} value={option?.ref}>
+                    {option?.itemName}
+                  </option>
+                ))
+              ) : (
+                <>
+                  <option value={''}>No Data</option>
+                </>
+              )}
             </Select>
 
             <FormHelperText>Treatment Rendered</FormHelperText>
@@ -503,24 +508,18 @@ const PatientList = ({ patients, settingsInfo }) => {
               native
               sx={{ position: 'relative', zIndex: 2, width: 200 }}
               fullWidth
-              ref={treatmentTypeRef}
+              value={selectedTreatmentItem}
+              onChange={(e) => setSelectedTreatmentItem(e.target.value)}
             >
-              {/* <MenuItem value={10}>Ten</MenuItem>
-                <MenuItem value={20}>Twenty</MenuItem>
-                <MenuItem value={30}>Thirty</MenuItem> */}
-
-              {options.length > 0 ? (
-                options.map((option, index) => (
-                  <option key={index} value={option}>
-                    {option}
+              {dropDownItems.length > 0 ? (
+                dropDownItems.map((option, index) => (
+                  <option key={index} value={option?.itemName}>
+                    {option?.itemName}
                   </option>
                 ))
               ) : (
                 <>
-                  <option value={'With Flouride'}>With Flouride</option>
-                  <option value={'Without Flouride'}>Without Flouride</option>
-                  <option value={'Medical Certificate'}>Medical Certificate</option>
-                  <option value={'Moral Band'}>Moral Band</option>
+                  <option value={''}>No Data</option>
                 </>
               )}
             </Select>
@@ -578,8 +577,8 @@ const PatientList = ({ patients, settingsInfo }) => {
               {gives.map((give) => {
                 return (
                   <Card key={(id += 1)} sx={{ mb: 0.5, p: 0.5 }}>
-                    <Typography variant="h6">{give.givenDate}</Typography>
-                    <Typography variant="h6">{give.amountGive}</Typography>
+                    <Typography variant="h6">Date: {give.givenDate}</Typography>
+                    <Typography variant="h6">Amount: {give.amountGive}</Typography>
                   </Card>
                 )
               })}
@@ -723,7 +722,13 @@ const PatientList = ({ patients, settingsInfo }) => {
           </Grid>
         </Grid>
 
-        <ToastContainer enableMultiContainer containerId={'gives-nofity'} />
+        <ToastContainer
+          autoClose={2000}
+          pauseOnFocusLoss={false}
+          pauseOnHover={false}
+          enableMultiContainer
+          containerId={'gives-nofity'}
+        />
       </dialog>
     </>
   )

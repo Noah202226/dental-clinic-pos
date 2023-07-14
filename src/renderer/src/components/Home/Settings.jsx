@@ -282,6 +282,7 @@ const Settings = ({
               <Tab label="Personalization" {...a11yProps(0)} />
               <Tab label="Users" {...a11yProps(1)} />
               <Tab label="Dropdown Values" {...a11yProps(2)} />
+              <Tab label="Product Inventory" {...a11yProps(3)} />
             </Tabs>
           </Box>
 
@@ -579,6 +580,23 @@ const Settings = ({
                   </Grid>
                 </Grid>
               </Stack>
+            </Box>
+          </CustomTabPanel>
+
+          <CustomTabPanel tabValue={tabValue} index={3}>
+            <Box
+              sx={{ padding: 1, mt: 2 }}
+              flexDirection={'row'}
+              alignItems={'center'}
+              justifyContent={'center'}
+            >
+              <Typography variant="h6">Manage your clinic item or products</Typography>
+
+              <Box sx={{ background: 'lightgrey', padding: 10 }}>
+                <Typography variant="body" textAlign={'center'}>
+                  Features coming soon...
+                </Typography>
+              </Box>
             </Box>
           </CustomTabPanel>
         </Box>
