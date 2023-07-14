@@ -160,7 +160,8 @@ const Settings = ({
     setContainer2(settingInfo?.containerTitle2)
     setContainer2BgColor(settingInfo?.container2BgColor)
     setLogoDir(settingInfo?.logoDir)
-  }, [settingInfo])
+  }, [])
+
   useEffect(() => {
     ipcRenderer.send('get-users')
 

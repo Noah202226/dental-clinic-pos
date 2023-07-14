@@ -413,6 +413,7 @@ const Home = ({ settingsInfo, userInfo }) => {
 
                       {dropdownData.map((dropdown) => (
                         <Button
+                          key={dropdown?._id}
                           size="small"
                           variant="outlined"
                           onClick={() => {

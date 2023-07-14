@@ -880,6 +880,7 @@ const PatientInfo = ({
                 value={fullName}
                 onChange={(e) => setfullName(e.target.value)}
                 InputLabelProps={{ shrink: true }}
+                disabled
               />
               <Stack
                 flexDirection={'row'}
