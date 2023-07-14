@@ -84,8 +84,6 @@ const Settings = ({
     ipcRenderer.send('new-user', newUserData)
   }
 
-  // const [settingInfo, setSettingInfo] = useState()
-
   const [settingsID, setsettingsID] = useState()
   const [loginBgColor, setLoginBgColor] = useState()
   const [loginTitle, setLoginTitle] = useState()
@@ -96,10 +94,6 @@ const Settings = ({
   const [container1BgColor, setContainer1BgColor] = useState()
   const [container2, setContainer2] = useState()
   const [container2BgColor, setContainer2BgColor] = useState()
-
-  const [logoDir, setLogoDir] = useState()
-
-  const [selectedImage, setSelectedImage] = useState(null)
 
   const modifyUserModalRef = useRef()
   const [users, setUsers] = useState([])
@@ -118,7 +112,6 @@ const Settings = ({
   const [newDropDownItem, setNewDropDownItem] = useState()
 
   const saveSettings = () => {
-    console.log(settingInfo._id)
     const data = {
       id: settingsID,
       loginBgColor,
@@ -159,7 +152,6 @@ const Settings = ({
     setContainer1BgColor(settingInfo?.container1BgColor)
     setContainer2(settingInfo?.containerTitle2)
     setContainer2BgColor(settingInfo?.container2BgColor)
-    setLogoDir(settingInfo?.logoDir)
   }, [])
 
   useEffect(() => {
@@ -195,8 +187,6 @@ const Settings = ({
     })
 
     // Settings
-
-    setAppTitle(settingInfo?.appTitle)
 
     ipcRenderer.on('settings-saved', (e, args) => {
       console.log('new setting saved.')
@@ -315,7 +305,9 @@ const Settings = ({
                     fullWidth
                     label="Login Background Color"
                     value={loginBgColor}
-                    onChange={(e) => setLoginBgColor(e.target.value)}
+                    onChange={(e) => {
+                      setLoginBgColor(e.target.value)
+                    }}
                   />
                 </Stack>
 
