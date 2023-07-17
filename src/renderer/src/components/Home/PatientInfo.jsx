@@ -1,7 +1,5 @@
 import {
   Autocomplete,
-  Badge,
-  Box,
   Button,
   Card,
   FormControl,
@@ -771,6 +769,7 @@ const PatientInfo = ({
                     )}
                     onChange={() => {}}
                     sx={{ mb: 2 }}
+                    InputLabelProps={{ shrink: true }}
                   />
 
                   <Stack flexDirection={'row'} sx={{ mb: 2 }}>
@@ -797,6 +796,7 @@ const PatientInfo = ({
                       value={patientTxAmount}
                       onChange={(e) => setPatientTxAmount(e.target.value)}
                       sx={{ mr: 2 }}
+                      InputLabelProps={{ shrink: true }}
                     />
                     <TextField
                       label="Tooth Number"
@@ -1150,7 +1150,7 @@ const PatientInfo = ({
         </Grid>
 
         <ToastContainer
-          autoClose={2000}
+          autoClose={1000}
           pauseOnFocusLoss={false}
           pauseOnHover={false}
           enableMultiContainer
@@ -1158,7 +1158,7 @@ const PatientInfo = ({
         />
       </dialog>
       <ToastContainer
-        autoClose={2000}
+        autoClose={1000}
         pauseOnFocusLoss={false}
         pauseOnHover={false}
         enableMultiContainer

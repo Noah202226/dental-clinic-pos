@@ -96,7 +96,7 @@ const Login = ({ setIsLogin, settingsInfo, setUserInfo }) => {
           </Button>
         </Stack>
 
-        <ToastContainer autoClose={2000} pauseOnFocusLoss={false} pauseOnHover={false} />
+        <ToastContainer autoClose={1000} pauseOnFocusLoss={false} pauseOnHover={false} />
       </Box>
     </Box>
   )
