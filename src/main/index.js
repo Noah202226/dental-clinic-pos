@@ -438,23 +438,27 @@ ipcMain.on('update-installment-patient-gives', async (e, args) => {
     // Handle any error messages or error handling
   }
 })
-// ipcMain.on('update-installment-patient-gives', async (e, args) => {
-//   console.log(args)
-//   try {
-//     const data = await InstallmentPatient.updateOne(
-//       { _id: args.patientID },
-//       { $set: { gives: args.gives, remainingBal: args.remainingBal } }
-//     )
-//     // await newPatient2.save()
-//     console.log('Installment Patient Give Updated successfully!', data)
-//     // Handle any success messages or redirects
 
-//     e.reply('installment-patient-gives-updated', args.patientID)
-//   } catch (error) {
-//     console.error('Error saving user:', error)
-//     // Handle any error messages or error handling
-//   }
-// })
+ipcMain.on('delete-installment-patient-gives', async (e, args) => {
+  console.log(args)
+  try {
+    const data = await InstallmentPatient.updateOne(
+      { _id: args.patientID },
+      {
+        $set: { gives: args.newGivesArray },
+        remainingBal: args.remainingBal
+      }
+    )
+    // await newPatient2.save()
+    console.log('Delete Patient Give Updated successfully!', data)
+    // Handle any success messages or redirects
+
+    e.reply('installment-patient-gives-deleted', args.patientID)
+  } catch (error) {
+    console.error('Error saving user:', error)
+    // Handle any error messages or error handling
+  }
+})
 
 // Sales Report
 ipcMain.on('get-filtered-sales-record', async (e, args) => {
@@ -492,6 +496,41 @@ ipcMain.on('new-expense', async (e, args) => {
     e.reply('new-expense-saved')
   } catch (error) {
     console.error('Error saving expense:', error)
+    // Handle any error messages or error handling
+  }
+})
+ipcMain.on('get-expense-tx-info', async (e, args) => {
+  try {
+    const data = await Expenses.findOne({
+      _id: args
+    })
+    // Handle any success messages or redirects
+    e.reply('expense-tx-info', JSON.stringify(data))
+  } catch (error) {
+    console.error('Error getting tx:', error)
+    // Handle any error messages or error handling
+  }
+})
+// Delete tx
+ipcMain.on('delete-expense-tx', async (e, args) => {
+  try {
+    await Expenses.findByIdAndDelete({
+      _id: args
+    })
+    // Handle any success messages or redirects
+    e.reply('expense-tx-deleted', 'Transaction deleted')
+  } catch (error) {
+    console.error('Error getting tx:', error)
+    // Handle any error messages or error handling
+  }
+})
+ipcMain.on('update-expense-tx', async (e, args) => {
+  try {
+    await Expenses.findByIdAndUpdate(args.txID, args.newData)
+    // Handle any success messages or redirects
+    e.reply('expense-tx-updated', 'Transaction updated')
+  } catch (error) {
+    console.error('Error getting tx:', error)
     // Handle any error messages or error handling
   }
 })

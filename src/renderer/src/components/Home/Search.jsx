@@ -1,4 +1,4 @@
-import { TextField } from '@mui/material'
+import { Fade, TextField, Tooltip } from '@mui/material'
 import Input from '@mui/base/Input'
 import { styled } from '@mui/system'
 import React from 'react'
@@ -58,14 +58,20 @@ const StyledInputElement = styled('input')(
 const Search = ({ search, setsearch }) => {
   return (
     <>
-      <Input
-        className="capitalize"
-        slots={{ input: StyledInputElement }}
-        type="search"
-        placeholder="Search Patient here..."
-        value={search}
-        onChange={(e) => setsearch(e.target.value)}
-      />
+      <Tooltip
+        title="Search Patient to see info"
+        TransitionComponent={Fade}
+        TransitionProps={{ timeout: 600 }}
+      >
+        <Input
+          className="capitalize"
+          slots={{ input: StyledInputElement }}
+          type="search"
+          placeholder="Search Patient here..."
+          value={search}
+          onChange={(e) => setsearch(e.target.value)}
+        />
+      </Tooltip>
     </>
   )
 }

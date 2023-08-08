@@ -1,7 +1,9 @@
+import { AddBoxRounded } from '@mui/icons-material'
 import {
   Autocomplete,
   Button,
   Card,
+  CircularProgress,
   FormControl,
   FormHelperText,
   Grid,
@@ -9,6 +11,7 @@ import {
   MenuItem,
   Paper,
   Select,
+  Skeleton,
   Stack,
   TextField,
   Typography
@@ -19,6 +22,8 @@ import { ToastContainer, toast } from 'react-toastify'
 
 const PatientInfo = ({
   patients,
+  isRenderingPatients,
+  setIsRenderingPatients,
   settingsInfo,
   dropdownData,
   dropDownItems,
@@ -257,6 +262,7 @@ const PatientInfo = ({
     })
 
     ipcRenderer.on('new-patient-record-saved', (e, args) => {
+      setIsRenderingPatients(true)
       toast.success(args, {
         position: 'top-center',
         containerId: 'homeToastifyContainer'
@@ -266,6 +272,7 @@ const PatientInfo = ({
     })
 
     ipcRenderer.on('patient-deleted', (e, args) => {
+      setIsRenderingPatients(true)
       patientInfoRef.current.close()
 
       toast.success('Patient Deleted.', {
@@ -277,6 +284,7 @@ const PatientInfo = ({
     })
 
     ipcRenderer.on('patient-updated', (e, args) => {
+      setIsRenderingPatients(true)
       patientInfoRef.current.close()
 
       toast.success('Patient Info Updated.', {
@@ -334,7 +342,7 @@ const PatientInfo = ({
 
   return (
     <>
-      <Stack flexDirection={'row'} alignItems={'center'} justifyContent={'space-between'}>
+      <Stack flexDirection={'row'} alignItems={'center'} justifyContent={'space-between'} mb={0.5}>
         <Typography variant="h5" color={settingsInfo?.homeFontColor}>
           {patients?.length > 0
             ? `${settingsInfo?.containerTitle2}'s`
@@ -345,6 +353,7 @@ const PatientInfo = ({
           size="small"
           onClick={() => newPatientButtonRef.current.showModal()}
         >
+          <AddBoxRounded sx={{ mr: 0.5 }} />
           New
         </Button>
       </Stack>
@@ -357,37 +366,49 @@ const PatientInfo = ({
           height: 454
         }}
       >
-        {patients.map((patient) => (
-          <Card
-            key={patient._id}
-            sx={{
-              mb: 1,
-              cursor: 'pointer',
-              transition: 'all 0.1s',
-              '&:hover': {
-                boxShadow: '4px 4px 8px 4px rgba(20,50,80,5)',
-                marginLeft: 1
-              }
-            }}
-            onClick={() => getPatientInfo(patient._id, patient.patientName)}
-          >
-            <Stack display={'flex'} alignItems={'start'} justifyContent={'space-around'}>
-              <Stack flexDirection={'row'} p={1} m={0}>
-                <Typography variant="h6">Patient Name:</Typography>
-                <Typography variant="h5" color={'indigo'} className="capitalize">
-                  {patient.patientName}
-                </Typography>
-              </Stack>
+        {isRenderingPatients ? (
+          <>
+            <Skeleton variant="rectangular" width={'100%'} height={60} sx={{ mb: 1 }} />
+            <Skeleton variant="rectangular" width={'100%'} height={60} sx={{ mb: 1 }} />
+            <Skeleton variant="rectangular" width={'100%'} height={60} sx={{ mb: 1 }} />
+            <Skeleton variant="rectangular" width={'100%'} height={60} sx={{ mb: 1 }} />
+            <Skeleton variant="rectangular" width={'100%'} height={60} sx={{ mb: 1 }} />
+            <Skeleton variant="rectangular" width={'100%'} height={60} sx={{ mb: 1 }} />
+            <Skeleton variant="rectangular" width={'100%'} height={60} sx={{ mb: 1 }} />
+          </>
+        ) : (
+          patients.map((patient) => (
+            <Card
+              key={patient._id}
+              sx={{
+                mb: 1,
+                cursor: 'pointer',
+                transition: 'all 0.1s',
+                '&:hover': {
+                  boxShadow: '4px 4px 8px 4px rgba(20,50,80,5)',
+                  marginLeft: 1
+                }
+              }}
+              onClick={() => getPatientInfo(patient._id, patient.patientName)}
+            >
+              <Stack display={'flex'} alignItems={'start'} justifyContent={'space-around'}>
+                <Stack flexDirection={'row'} p={1} m={0}>
+                  <Typography variant="h6">Patient Name:</Typography>
+                  <Typography variant="h5" color={'indigo'} className="capitalize">
+                    {patient.patientName}
+                  </Typography>
+                </Stack>
 
-              <Stack flexDirection={'row'} p={1} mt={-3}>
-                <Typography variant="body">Address:</Typography>
-                <Typography variant="caption2" color={'indigo'}>
-                  {patient.address}
-                </Typography>
+                <Stack flexDirection={'row'} p={1} mt={-3}>
+                  <Typography variant="body">Address:</Typography>
+                  <Typography variant="caption2" color={'indigo'}>
+                    {patient.address}
+                  </Typography>
+                </Stack>
               </Stack>
-            </Stack>
-          </Card>
-        ))}
+            </Card>
+          ))
+        )}
       </Paper>
 
       {/* New Patient Dialog */}

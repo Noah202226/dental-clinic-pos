@@ -30,12 +30,16 @@ import Settings from './Home/Settings'
 // import ExportToExcelButton from './Home/ExportToExcelButton'
 
 import ExcelJSButton from './Home/ExcelJs'
+import ExpenseInfo from './Home/ExpenseInfo'
 
 const Home = ({ settingsInfo, userInfo }) => {
   const ipcRenderer = window.ipcRenderer
 
-  const [patientsRecord, setPatientsRecord] = useState([])
   const [installmentPatients, setInstallmentPatients] = useState([])
+  const [isRenderingInstallmentPatients, setIsRenderingInstallmentPatients] = useState(true)
+
+  const [patientsRecord, setPatientsRecord] = useState([])
+  const [isRenderingPatients, setIsRenderingPatients] = useState(true)
 
   const [search, setsearch] = useState('')
   const [filterPatientsData, setFilterPatientsData] = useState([])
@@ -45,6 +49,7 @@ const Home = ({ settingsInfo, userInfo }) => {
 
   // Settings Ref
   const settingModalRef = useRef()
+  const expenseTransactionRef = useRef()
 
   // Transaction refs
   const transactionReportRef = useRef()
@@ -191,6 +196,8 @@ const Home = ({ settingsInfo, userInfo }) => {
       data.forEach((doc) => {
         setPatientsRecord((prevDocuments) => [...prevDocuments, doc])
       })
+
+      setIsRenderingPatients(false)
     })
 
     ipcRenderer.on('installment-patients', (e, args) => {
@@ -202,6 +209,7 @@ const Home = ({ settingsInfo, userInfo }) => {
       data.forEach((doc) => {
         setInstallmentPatients((prevDocuments) => [...prevDocuments, doc])
       })
+      setIsRenderingInstallmentPatients(false)
     })
 
     // Getting sales and expenses
@@ -257,12 +265,16 @@ const Home = ({ settingsInfo, userInfo }) => {
             selectedTreatmentItem={selectedTreatmentItem}
             setSelectedTreatmentItem={setSelectedTreatmentItem}
             patients={search === '' ? installmentPatients : filteredInstallmentPatientsData}
+            isRenderingInstallmentPatients={isRenderingInstallmentPatients}
+            setIsRenderingInstallmentPatients={setIsRenderingInstallmentPatients}
             settingsInfo={settingsInfo}
           />
         </Grid>
 
         <Grid item xs={6}>
           <PatientInfo
+            isRenderingPatients={isRenderingPatients}
+            setIsRenderingPatients={setIsRenderingPatients}
             dropdownData={dropdownData}
             dropDownItems={dropDownItems}
             selectedTreatment={selectedTreatment}
@@ -479,8 +491,8 @@ const Home = ({ settingsInfo, userInfo }) => {
                     .map((row) => (
                       <TableRow
                         onClick={() => {
-                          getSalesTransactionInfo(row._id)
-                          saleTransactionRef.current.showModal()
+                          expenseTransactionRef.current.showModal()
+                          setTxID(row._id)
                         }}
                         key={row._id}
                         sx={{
@@ -603,6 +615,13 @@ const Home = ({ settingsInfo, userInfo }) => {
 
       <SalesInfo
         saleTransactionRef={saleTransactionRef}
+        txID={txID}
+        firstDay={firstDay}
+        lastDay={lastDay}
+      />
+
+      <ExpenseInfo
+        expenseTransactionRef={expenseTransactionRef}
         txID={txID}
         firstDay={firstDay}
         lastDay={lastDay}

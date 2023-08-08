@@ -1,14 +1,18 @@
+import { AddBoxRounded } from '@mui/icons-material'
 import {
   Box,
   Button,
   Card,
+  Fade,
   FormControl,
   FormHelperText,
   Grid,
   Paper,
   Select,
+  Skeleton,
   Stack,
   TextField,
+  Tooltip,
   Typography
 } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
@@ -16,6 +20,8 @@ import { ToastContainer, toast } from 'react-toastify'
 
 const PatientList = ({
   patients,
+  isRenderingInstallmentPatients,
+  setIsRenderingInstallmentPatients,
   settingsInfo,
   dropdownData,
   dropDownItems,
@@ -215,9 +221,25 @@ const PatientList = ({
     // ipcRenderer.send('new-sale-record', sale)
   }
 
+  const deleteGive = (index, amount) => {
+    const newData = [...gives]
+    newData.splice(index, 1)
+    setGives(newData)
+
+    setremainingBal(parseInt(remainingBal) + parseInt(amount))
+
+    console.log({ remainingBal: parseInt(remainingBal) + parseInt(amount) })
+    ipcRenderer.send('delete-installment-patient-gives', {
+      patientID,
+      newGivesArray: newData,
+      remainingBal: parseInt(remainingBal) + parseInt(amount)
+    })
+  }
+
   useEffect(() => {
     ipcRenderer.on('installment-patient-saved', (e, args) => {
-      ipcRenderer.send('patients-records')
+      setIsRenderingInstallmentPatients(true)
+
       ipcRenderer.send('installment-patient-records')
       toast.success('New patient saved.', {
         position: 'top-center',
@@ -248,6 +270,7 @@ const PatientList = ({
     })
 
     ipcRenderer.on('installment-patient-deleted', (e, args) => {
+      setIsRenderingInstallmentPatients(true)
       toast.success('Patient Deleted', {
         position: 'top-center',
         containerId: 'homeToastifyContainer'
@@ -266,13 +289,13 @@ const PatientList = ({
 
       setremainingBal('')
 
-      ipcRenderer.send('patients-records')
       ipcRenderer.send('installment-patient-records')
 
       patientInfoRef.current.close()
     })
 
     ipcRenderer.on('installment-patient-gives-updated', (e, args) => {
+      setIsRenderingInstallmentPatients(true)
       toast.success('Patient gives updated.', {
         position: 'top-center',
         containerId: 'gives-nofity'
@@ -283,10 +306,24 @@ const PatientList = ({
 
       ipcRenderer.send('get-installment-patient-info', args)
     })
+
+    ipcRenderer.on('installment-patient-gives-deleted', (e, args) => {
+      setIsRenderingInstallmentPatients(true)
+
+      setIsRenderingInstallmentPatients(true)
+      toast.success('Patient Give Deleted', {
+        position: 'top-center',
+        containerId: 'gives-nofity'
+      })
+
+      ipcRenderer.send('installment-patient-records')
+
+      ipcRenderer.send('get-installment-patient-info', args)
+    })
   }, [])
   return (
     <>
-      <Stack flexDirection={'row'} alignItems={'center'} justifyContent={'space-between'}>
+      <Stack flexDirection={'row'} alignItems={'center'} justifyContent={'space-between'} mb={0.5}>
         <Typography variant="h5" color={settingsInfo?.homeFontColor}>
           {patients?.length > 0
             ? `${settingsInfo?.containerTitle1}'s`
@@ -300,6 +337,7 @@ const PatientList = ({
             newPatientRef.current.classList.add('show')
           }}
         >
+          <AddBoxRounded sx={{ mr: 0.5 }} />
           New
         </Button>
       </Stack>
@@ -312,111 +350,126 @@ const PatientList = ({
           height: 454
         }}
       >
-        {patients.map((patient) => (
-          <Card
-            key={patient._id}
-            sx={{
-              mb: 1,
-              cursor: 'pointer',
-              transition: 'all 0.1s',
-              '&:hover': {
-                boxShadow: '4px 4px 8px 4px rgba(20,50,80,5)',
-                marginLeft: 1
-              }
-            }}
-            onClick={() => getPatientInfo(patient._id, patient.patientName)}
-          >
-            <Stack display={'flex'} alignItems={'start'} justifyContent={'space-around'}>
-              <Stack flexDirection={'row'} p={1} m={0}>
-                <Typography variant="h6">Patient Name:</Typography>
-                <Typography variant="h5" color={'indigo'} ml={2}>
-                  {patient.patientName}
-                </Typography>
-              </Stack>
-
-              <Grid container>
-                <Grid item xs={6}>
-                  <Stack flexDirection={'row'} p={1} mt={-2}>
-                    <Typography variant="body">Address:</Typography>
-                    <Typography variant="caption2" color={'indigo'} ml={2}>
-                      {patient.patientAddress}
+        {isRenderingInstallmentPatients ? (
+          <>
+            <Skeleton variant="rectangular" width={'100%'} height={150} sx={{ mb: 1 }} />
+            <Skeleton variant="rectangular" width={'100%'} height={150} sx={{ mb: 1 }} />
+            <Skeleton variant="rectangular" width={'100%'} height={150} sx={{ mb: 1 }} />
+          </>
+        ) : (
+          patients.map((patient) => (
+            <Tooltip
+              title={`Click to view details for ${patient?.patientName}`}
+              placement="top"
+              TransitionComponent={Fade}
+              TransitionProps={{ timeout: 600 }}
+            >
+              <Card
+                key={patient._id}
+                sx={{
+                  mb: 1,
+                  cursor: 'pointer',
+                  transition: 'all 0.1s',
+                  '&:hover': {
+                    boxShadow: '4px 4px 8px 4px rgba(20,50,80,5)',
+                    marginLeft: 1
+                  }
+                }}
+                onClick={() => getPatientInfo(patient._id, patient.patientName)}
+              >
+                <Stack display={'flex'} alignItems={'start'} justifyContent={'space-around'}>
+                  <Stack flexDirection={'row'} p={1} m={0}>
+                    <Typography variant="h6">Patient Name:</Typography>
+                    <Typography variant="h5" color={'indigo'} ml={2}>
+                      {patient.patientName}
                     </Typography>
                   </Stack>
 
-                  <Stack flexDirection={'row'} p={1} mt={-2}>
-                    <Typography variant="body">Age:</Typography>
-                    <Typography variant="caption2" color={'indigo'} ml={2}>
-                      {patient.patientAge}
-                    </Typography>
-                  </Stack>
+                  <Grid container>
+                    <Grid item xs={6}>
+                      <Stack flexDirection={'row'} p={1} mt={-2}>
+                        <Typography variant="body">Address:</Typography>
+                        <Typography variant="caption2" color={'indigo'} ml={2}>
+                          {patient.patientAddress}
+                        </Typography>
+                      </Stack>
 
-                  <Stack flexDirection={'row'} p={1} mt={-2}>
-                    <Typography variant="body">Treatment Rendered: </Typography>
-                    <Typography
-                      variant="caption2"
-                      color={'indigo'}
-                      ml={2}
-                      sx={{ textTransform: 'capitalize' }}
-                    >
-                      {patient.treatmentRendered}
-                    </Typography>
-                  </Stack>
-                  <Stack flexDirection={'row'} p={1} mt={-2}>
-                    <Typography variant="body">Treatment Type: </Typography>
-                    <Typography
-                      variant="caption2"
-                      color={'indigo'}
-                      ml={2}
-                      sx={{ textTransform: 'capitalize' }}
-                    >
-                      {patient.treatmentType}
-                    </Typography>
-                  </Stack>
-                </Grid>
+                      <Stack flexDirection={'row'} p={1} mt={-2}>
+                        <Typography variant="body">Age:</Typography>
+                        <Typography variant="caption2" color={'indigo'} ml={2}>
+                          {patient.patientAge}
+                        </Typography>
+                      </Stack>
 
-                <Grid item xs={6} container>
-                  <Stack flexDirection={'row'} p={1} mt={-2}>
-                    <Typography variant="body">Service Price:</Typography>
-                    <Typography variant="caption2" color={'indigo'} ml={2}>
-                      {patient.servicePrice}
-                    </Typography>
-                  </Stack>
+                      <Stack flexDirection={'row'} p={1} mt={-2}>
+                        <Typography variant="body">Treatment Rendered: </Typography>
+                        <Typography
+                          variant="caption2"
+                          color={'indigo'}
+                          ml={2}
+                          sx={{ textTransform: 'capitalize' }}
+                        >
+                          {patient.treatmentRendered}
+                        </Typography>
+                      </Stack>
+                      <Stack flexDirection={'row'} p={1} mt={-2}>
+                        <Typography variant="body">Treatment Type: </Typography>
+                        <Typography
+                          variant="caption2"
+                          color={'indigo'}
+                          ml={2}
+                          sx={{ textTransform: 'capitalize' }}
+                        >
+                          {patient.treatmentType}
+                        </Typography>
+                      </Stack>
+                    </Grid>
 
-                  <Stack flexDirection={'row'} p={1} mt={-2}>
-                    <Typography variant="body">Downpayment: </Typography>
-                    <Typography variant="caption2" color={'indigo'} ml={2}>
-                      {patient.initialPay}
-                    </Typography>
-                  </Stack>
+                    <Grid item xs={6} container>
+                      <Stack flexDirection={'row'} p={1} mt={-2}>
+                        <Typography variant="body">Service Price:</Typography>
+                        <Typography variant="caption2" color={'indigo'} ml={2}>
+                          {patient.servicePrice}
+                        </Typography>
+                      </Stack>
 
-                  <Stack flexDirection={'row'} p={1} mt={-2}>
-                    <Typography variant="body">Total Gives: </Typography>
-                    <Typography
-                      variant="caption2"
-                      color={'indigo'}
-                      ml={2}
-                      sx={{ textTransform: 'capitalize' }}
-                    >
-                      {patient.gives?.reduce((a, b) => a + parseInt(b.amountGive), 0)}
-                    </Typography>
-                  </Stack>
+                      <Stack flexDirection={'row'} p={1} mt={-2}>
+                        <Typography variant="body">Downpayment: </Typography>
+                        <Typography variant="caption2" color={'indigo'} ml={2}>
+                          {patient.initialPay}
+                        </Typography>
+                      </Stack>
 
-                  <Stack flexDirection={'row'} p={1} mt={-2}>
-                    <Typography variant="body">Remaining Balance: </Typography>
-                    <Typography
-                      variant="caption2"
-                      color={'indigo'}
-                      ml={2}
-                      sx={{ textTransform: 'capitalize' }}
-                    >
-                      {patient.remainingBal}
-                    </Typography>
-                  </Stack>
-                </Grid>
-              </Grid>
-            </Stack>
-          </Card>
-        ))}
+                      <Stack flexDirection={'row'} p={1} mt={-2}>
+                        <Typography variant="body">Total Gives: </Typography>
+                        <Typography
+                          variant="caption2"
+                          color={'indigo'}
+                          ml={2}
+                          sx={{ textTransform: 'capitalize' }}
+                        >
+                          {patient.gives?.reduce((a, b) => a + parseInt(b.amountGive), 0)}
+                        </Typography>
+                      </Stack>
+
+                      <Stack flexDirection={'row'} p={1} mt={-2}>
+                        <Typography variant="body">Remaining Balance: </Typography>
+                        <Typography
+                          variant="caption2"
+                          color={'indigo'}
+                          ml={2}
+                          sx={{ textTransform: 'capitalize' }}
+                        >
+                          {patient.remainingBal}
+                        </Typography>
+                      </Stack>
+                    </Grid>
+                  </Grid>
+                </Stack>
+              </Card>
+            </Tooltip>
+          ))
+        )}
       </Paper>
 
       {/* New Patient Installment */}
@@ -555,7 +608,14 @@ const PatientList = ({
       >
         <Grid container spacing={1}>
           <Grid item xs={5} sx={{ background: 'rgba(50,200,150, 0.5)', p: 0.5, borderRadius: 1 }}>
-            <Typography variant="h6">Patient Gives</Typography>
+            <Stack flexDirection={'row'} alignItems={'center'} justifyContent={'space-between'}>
+              <Typography variant="h6">Patient Gives</Typography>
+
+              <Typography variant="caption" color={'coral'} sx={{ fontStyle: 'italic' }}>
+                * Click patient give to delete
+              </Typography>
+            </Stack>
+
             <Stack flexDirection={'row'} justifyContent={'space-between'}>
               <Typography variant="body">No. of Gives: {gives.length}</Typography>
               <Typography variant="body">
@@ -574,9 +634,22 @@ const PatientList = ({
                 mt: 2
               }}
             >
-              {gives.map((give) => {
+              {gives.map((give, index) => {
                 return (
-                  <Card key={(id += 1)} sx={{ mb: 0.5, p: 0.5 }}>
+                  <Card
+                    key={(id += 1)}
+                    sx={{
+                      mb: 0.5,
+                      p: 0.5,
+                      cursor: 'pointer',
+                      transition: 'all 0.1s',
+                      '&:hover': {
+                        boxShadow: '4px 4px 8px 4px rgba(20,50,80,5)',
+                        marginLeft: 1
+                      }
+                    }}
+                    onClick={() => deleteGive(index, gives[index].amountGive)}
+                  >
                     <Typography variant="h6">Date: {give.givenDate}</Typography>
                     <Typography variant="h6">Amount: {give.amountGive}</Typography>
                   </Card>
