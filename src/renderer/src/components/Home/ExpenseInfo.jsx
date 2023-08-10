@@ -25,40 +25,42 @@ const ExpenseInfo = ({ expenseTransactionRef, txID, firstDay, lastDay }) => {
   useEffect(() => {
     if (txID) {
       ipcRenderer.send('get-expense-tx-info', txID)
-
-      ipcRenderer.on('expense-tx-info', (e, args) => {
-        const tx = JSON.parse(args)
-
-        setExpenseName(tx.expenseName)
-        setExpenseAmount(tx.amountPaid)
-
-        const year = new Date(tx.dateExpense).getFullYear()
-        const month = (new Date(tx.dateExpense).getMonth() + 1).toString().padStart(2, '0')
-        const day = new Date(tx.dateExpense).getDate().toString().padStart(2, '0')
-
-        const formattedDate = `${year}-${month}-${day}`
-        setExpenseDate(formattedDate)
-      })
-
-      ipcRenderer.on('expense-tx-deleted', (e, args) => {
-        toast.success(args, { position: 'top-center', containerId: 'transactionsNofity' })
-
-        ipcRenderer.send('get-filtered-sales-record', { firstDay, lastDay })
-        ipcRenderer.send('get-filtered-expenses-record', { firstDay, lastDay })
-
-        expenseTransactionRef.current.close()
-      })
-
-      ipcRenderer.on('expense-tx-updated', (e, args) => {
-        toast.success(args, { position: 'top-center', containerId: 'transactionsNofity' })
-
-        ipcRenderer.send('get-filtered-sales-record', { firstDay, lastDay })
-        ipcRenderer.send('get-filtered-expenses-record', { firstDay, lastDay })
-
-        expenseTransactionRef.current.close()
-      })
     }
   }, [txID])
+
+  useEffect(() => {
+    ipcRenderer.on('expense-tx-info', (e, args) => {
+      const tx = JSON.parse(args)
+
+      setExpenseName(tx.expenseName)
+      setExpenseAmount(tx.amountPaid)
+
+      const year = new Date(tx.dateExpense).getFullYear()
+      const month = (new Date(tx.dateExpense).getMonth() + 1).toString().padStart(2, '0')
+      const day = new Date(tx.dateExpense).getDate().toString().padStart(2, '0')
+
+      const formattedDate = `${year}-${month}-${day}`
+      setExpenseDate(formattedDate)
+    })
+
+    ipcRenderer.on('expense-tx-deleted', (e, args) => {
+      toast.success(args, { position: 'top-center', containerId: 'transactionsNofity' })
+
+      ipcRenderer.send('get-filtered-sales-record', { firstDay, lastDay })
+      ipcRenderer.send('get-filtered-expenses-record', { firstDay, lastDay })
+
+      expenseTransactionRef.current.close()
+    })
+
+    ipcRenderer.on('expense-tx-updated', (e, args) => {
+      toast.success(args, { position: 'top-center', containerId: 'transactionsNofity' })
+
+      ipcRenderer.send('get-filtered-sales-record', { firstDay, lastDay })
+      ipcRenderer.send('get-filtered-expenses-record', { firstDay, lastDay })
+
+      expenseTransactionRef.current.close()
+    })
+  }, [])
 
   return (
     <dialog ref={expenseTransactionRef} style={{ padding: 10 }}>

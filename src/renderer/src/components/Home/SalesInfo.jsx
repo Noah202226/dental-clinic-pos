@@ -26,35 +26,37 @@ const SalesInfo = ({ saleTransactionRef, txID, firstDay, lastDay }) => {
   useEffect(() => {
     if (txID) {
       ipcRenderer.send('get-sale-tx-info', txID)
-
-      ipcRenderer.on('sale-tx-info', (e, args) => {
-        const tx = JSON.parse(args)
-
-        setpatientName(tx.patientName)
-        settreatmentRendered(tx.treatmentRendered)
-        settreatmentType(tx.treatmentType)
-        setSaleAmount(tx.amountPaid)
-      })
-
-      ipcRenderer.on('tx-deleted', (e, args) => {
-        toast.success(args, { position: 'top-center', containerId: 'transactionsNofity' })
-
-        ipcRenderer.send('get-filtered-sales-record', { firstDay, lastDay })
-        ipcRenderer.send('get-filtered-expenses-record', { firstDay, lastDay })
-
-        saleTransactionRef.current.close()
-      })
-
-      ipcRenderer.on('tx-updated', (e, args) => {
-        toast.success(args, { position: 'top-center', containerId: 'transactionsNofity' })
-
-        ipcRenderer.send('get-filtered-sales-record', { firstDay, lastDay })
-        ipcRenderer.send('get-filtered-expenses-record', { firstDay, lastDay })
-
-        saleTransactionRef.current.close()
-      })
     }
   }, [txID])
+
+  useEffect(() => {
+    ipcRenderer.on('sale-tx-info', (e, args) => {
+      const tx = JSON.parse(args)
+
+      setpatientName(tx.patientName)
+      settreatmentRendered(tx.treatmentRendered)
+      settreatmentType(tx.treatmentType)
+      setSaleAmount(tx.amountPaid)
+    })
+
+    ipcRenderer.on('tx-deleted', (e, args) => {
+      toast.success(args, { position: 'top-center', containerId: 'transactionsNofity' })
+
+      ipcRenderer.send('get-filtered-sales-record', { firstDay, lastDay })
+      ipcRenderer.send('get-filtered-expenses-record', { firstDay, lastDay })
+
+      saleTransactionRef.current.close()
+    })
+
+    ipcRenderer.on('tx-updated', (e, args) => {
+      toast.success(args, { position: 'top-center', containerId: 'transactionsNofity' })
+
+      ipcRenderer.send('get-filtered-sales-record', { firstDay, lastDay })
+      ipcRenderer.send('get-filtered-expenses-record', { firstDay, lastDay })
+
+      saleTransactionRef.current.close()
+    })
+  }, [])
 
   return (
     <dialog ref={saleTransactionRef} style={{ padding: 10 }}>

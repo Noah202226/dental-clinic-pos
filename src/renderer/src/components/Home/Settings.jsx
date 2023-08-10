@@ -31,7 +31,35 @@ const Settings = ({
   selectedTreatment,
   setSelectedTreatment,
   selectedTreatmentItem,
-  setSelectedTreatmentItem
+  setSelectedTreatmentItem,
+
+  settingsID,
+  loginTitle,
+  setLoginTitle,
+
+  loginBgColor,
+  setLoginBgColor,
+
+  appTitle,
+  setAppTitle,
+
+  homeBgColor,
+  setHomeBgColor,
+
+  homeFontColor,
+  setHomeFontColor,
+
+  container1,
+  setContainer1,
+
+  container1BgColor,
+  setContainer1BgColor,
+
+  container2,
+  setContainer2,
+
+  container2BgColor,
+  setContainer2BgColor
 }) => {
   const ipcRenderer = window.ipcRenderer
 
@@ -84,17 +112,6 @@ const Settings = ({
     ipcRenderer.send('new-user', newUserData)
   }
 
-  const [settingsID, setsettingsID] = useState()
-  const [loginBgColor, setLoginBgColor] = useState()
-  const [loginTitle, setLoginTitle] = useState()
-  const [appTitle, setAppTitle] = useState()
-  const [homeBgColor, setHomeBgColor] = useState()
-  const [homeFontColor, setHomeFontColor] = useState()
-  const [container1, setContainer1] = useState()
-  const [container1BgColor, setContainer1BgColor] = useState()
-  const [container2, setContainer2] = useState()
-  const [container2BgColor, setContainer2BgColor] = useState()
-
   const modifyUserModalRef = useRef()
   const [users, setUsers] = useState([])
   const [userInfo, setUserInfo] = useState()
@@ -111,19 +128,30 @@ const Settings = ({
   const [newDropDownName, setNewDropDownName] = useState()
   const [newDropDownItem, setNewDropDownItem] = useState()
 
+  const newLoginTitleRef = useRef()
+  const newLoginBackgroundRef = useRef()
+  const newAppTitleRef = useRef()
+  const newHomeBgColorRef = useRef()
+  const newFontColorRef = useRef()
+  const newContainer1Ref = useRef()
+  const newContainer1BgColorRef = useRef()
+  const newContainer2Ref = useRef()
+  const newContainer2BgColorRef = useRef()
+
   const saveSettings = () => {
     const data = {
       id: settingsID,
-      loginBgColor,
-      loginTitle,
-      appTitle,
-      homeBgColor,
-      homeFontColor,
-      containerTitle1: container1,
-      container1BgColor,
-      containerTitle2: container2,
-      container2BgColor
+      loginTitle: newLoginTitleRef.current.children[1].children[0].value,
+      loginBgColor: newLoginBackgroundRef.current.children[1].children[0].value,
+      appTitle: newAppTitleRef.current.children[1].children[0].value,
+      homeBgColor: newHomeBgColorRef.current.children[1].children[0].value,
+      homeFontColor: newFontColorRef.current.children[1].children[0].value,
+      containerTitle1: newContainer1Ref.current.children[1].children[0].value,
+      container1BgColor: newContainer1BgColorRef.current.children[1].children[0].value,
+      containerTitle2: newContainer2Ref.current.children[1].children[0].value,
+      container2BgColor: newContainer2BgColorRef.current.children[1].children[0].value
     }
+
     ipcRenderer.send('new-setting', data)
   }
 
@@ -140,19 +168,6 @@ const Settings = ({
   const deleteUser = (id) => {
     ipcRenderer.send('delete-user', id)
   }
-
-  useEffect(() => {
-    setsettingsID(settingInfo?._id)
-    setLoginTitle(settingInfo?.loginTitle)
-    setLoginBgColor(settingInfo?.loginBgColor)
-    setAppTitle(settingInfo?.appTitle)
-    setHomeBgColor(settingInfo?.homeBgColor)
-    setHomeFontColor(settingInfo?.homeFontColor)
-    setContainer1(settingInfo?.containerTitle1)
-    setContainer1BgColor(settingInfo?.container1BgColor)
-    setContainer2(settingInfo?.containerTitle2)
-    setContainer2BgColor(settingInfo?.container2BgColor)
-  }, [])
 
   useEffect(() => {
     ipcRenderer.send('get-users')
@@ -197,7 +212,7 @@ const Settings = ({
 
       setTimeout(() => {
         ipcRenderer.send('settings-saved')
-      }, 2000)
+      }, 4000)
     })
 
     ipcRenderer.on('new-user-saved', (e, args) => {
@@ -279,115 +294,229 @@ const Settings = ({
 
           {/* Tab 1 */}
           <CustomTabPanel tabValue={tabValue} index={0}>
-            <Grid item xs={7}>
+            <Stack flexDirection={'row'} alignItems={'center'} justifyContent={'space-around'}>
               <Typography variant="h4" m={1}>
                 Application Customize
               </Typography>
+              <Typography variant="h5">NEW SETTING HERE</Typography>
+            </Stack>
 
-              <Stack
-                flexDirection={'column'}
-                alignItems={'center'}
-                justifyContent={'space-between'}
-                mt={1}
-              >
-                <Stack flexDirection={'row'} justifyContent={'space-between'} width={'100%'}>
-                  <TextField
-                    fullWidth
-                    label="Login Title"
-                    value={loginTitle}
-                    onChange={(e) => setLoginTitle(e.target.value)}
-                    sx={{ m: 1 }}
-                  />
+            <Grid container>
+              <Grid item xs={6}>
+                <Stack
+                  flexDirection={'column'}
+                  alignItems={'center'}
+                  justifyContent={'space-between'}
+                  mt={1}
+                >
+                  <Stack flexDirection={'row'} justifyContent={'space-between'} width={'100%'}>
+                    <TextField
+                      fullWidth
+                      label="Login Title"
+                      value={loginTitle}
+                      onChange={(e) => setLoginTitle(e.target.value)}
+                      sx={{ m: 1 }}
+                      disabled
+                    />
 
-                  <TextField
-                    type="color"
-                    sx={{ m: 1 }}
-                    fullWidth
-                    label="Login Background Color"
-                    value={loginBgColor}
-                    onChange={(e) => {
-                      setLoginBgColor(e.target.value)
-                    }}
-                  />
+                    <TextField
+                      type="color"
+                      sx={{ m: 1 }}
+                      fullWidth
+                      label="Login Background Color"
+                      value={loginBgColor}
+                      onChange={(e) => setLoginBgColor(e.target.value)}
+                      InputLabelProps={{ shrink: true }}
+                      disabled
+                    />
+                  </Stack>
+
+                  <Stack
+                    flexDirection={'row'}
+                    justifyContent={'space-between'}
+                    width={'100%'}
+                    mt={1}
+                  >
+                    <TextField
+                      sx={{ m: 1 }}
+                      fullWidth
+                      label="App Title"
+                      value={appTitle}
+                      onChange={(e) => setAppTitle(e.target.value)}
+                      InputLabelProps={{ shrink: true }}
+                      disabled
+                    />
+                    <TextField
+                      type="color"
+                      sx={{ m: 1 }}
+                      fullWidth
+                      label="Home Background Color"
+                      value={homeBgColor}
+                      onChange={(e) => setHomeBgColor(e.target.value)}
+                      InputLabelProps={{ shrink: true }}
+                      disabled
+                    />
+                    <TextField
+                      type="color"
+                      sx={{ m: 1 }}
+                      fullWidth
+                      label="Font Color"
+                      value={homeFontColor}
+                      onChange={(e) => setHomeFontColor(e.target.value)}
+                      InputLabelProps={{ shrink: true }}
+                      disabled
+                    />
+                  </Stack>
+
+                  <Stack
+                    flexDirection={'row'}
+                    justifyContent={'space-between'}
+                    width={'100%'}
+                    mt={1}
+                  >
+                    <TextField
+                      sx={{ m: 1 }}
+                      fullWidth
+                      label="Container 1 Title"
+                      value={container1}
+                      onChange={(e) => setContainer1(e.target.value)}
+                      InputLabelProps={{ shrink: true }}
+                      disabled
+                    />
+                    <TextField
+                      type="color"
+                      sx={{ m: 1 }}
+                      fullWidth
+                      label="Container 1 Background Color"
+                      value={container1BgColor}
+                      onChange={(e) => setContainer1BgColor(e.target.value)}
+                      InputLabelProps={{ shrink: true }}
+                      disabled
+                    />
+                  </Stack>
+
+                  <Stack
+                    flexDirection={'row'}
+                    justifyContent={'space-between'}
+                    width={'100%'}
+                    mt={3}
+                  >
+                    <TextField
+                      sx={{ m: 1 }}
+                      fullWidth
+                      label="Container 2 Title"
+                      value={container2}
+                      onChange={(e) => setContainer2(e.target.value)}
+                      InputLabelProps={{ shrink: true }}
+                      disabled
+                    />
+
+                    <TextField
+                      type="color"
+                      sx={{ m: 1 }}
+                      fullWidth
+                      label="Container 2 Background Color"
+                      value={container2BgColor}
+                      onChange={(e) => setContainer2BgColor(e.target.value)}
+                      InputLabelProps={{ shrink: true }}
+                      disabled
+                    />
+                  </Stack>
                 </Stack>
+              </Grid>
 
-                <Stack flexDirection={'row'} justifyContent={'space-between'} width={'100%'} mt={1}>
-                  <TextField
-                    sx={{ m: 1 }}
-                    fullWidth
-                    label="App Title"
-                    value={appTitle}
-                    onChange={(e) => setAppTitle(e.target.value)}
-                    InputLabelProps={{ shrink: true }}
-                  />
-                  <TextField
-                    type="color"
-                    sx={{ m: 1 }}
-                    fullWidth
-                    label="Home Background Color"
-                    value={homeBgColor}
-                    onChange={(e) => setHomeBgColor(e.target.value)}
-                    InputLabelProps={{ shrink: true }}
-                  />
-                  <TextField
-                    type="color"
-                    sx={{ m: 1 }}
-                    fullWidth
-                    label="Font Color"
-                    value={homeFontColor}
-                    onChange={(e) => setHomeFontColor(e.target.value)}
-                    InputLabelProps={{ shrink: true }}
-                  />
+              <Grid item xs={6} bgcolor={'antiquewhite'}>
+                <Stack
+                  flexDirection={'column'}
+                  alignItems={'center'}
+                  justifyContent={'space-between'}
+                  mt={1}
+                >
+                  <Stack flexDirection={'row'} justifyContent={'space-between'} width={'100%'}>
+                    <TextField fullWidth label="Login Title" sx={{ m: 1 }} ref={newLoginTitleRef} />
+
+                    <TextField
+                      type="color"
+                      sx={{ m: 1 }}
+                      fullWidth
+                      label="Login Background Color"
+                      ref={newLoginBackgroundRef}
+                    />
+                  </Stack>
+
+                  <Stack
+                    flexDirection={'row'}
+                    justifyContent={'space-between'}
+                    width={'100%'}
+                    mt={1}
+                  >
+                    <TextField sx={{ m: 1 }} fullWidth label="App Title" ref={newAppTitleRef} />
+                    <TextField
+                      type="color"
+                      sx={{ m: 1 }}
+                      fullWidth
+                      label="Home Background Color"
+                      ref={newHomeBgColorRef}
+                    />
+                    <TextField
+                      type="color"
+                      sx={{ m: 1 }}
+                      fullWidth
+                      label="Font Color"
+                      ref={newFontColorRef}
+                    />
+                  </Stack>
+
+                  <Stack
+                    flexDirection={'row'}
+                    justifyContent={'space-between'}
+                    width={'100%'}
+                    mt={1}
+                  >
+                    <TextField
+                      sx={{ m: 1 }}
+                      fullWidth
+                      label="Container 1 Title"
+                      ref={newContainer1Ref}
+                    />
+                    <TextField
+                      type="color"
+                      sx={{ m: 1 }}
+                      fullWidth
+                      label="Container 1 Background Color"
+                      ref={newContainer1BgColorRef}
+                    />
+                  </Stack>
+
+                  <Stack
+                    flexDirection={'row'}
+                    justifyContent={'space-between'}
+                    width={'100%'}
+                    mt={3}
+                  >
+                    <TextField
+                      sx={{ m: 1 }}
+                      fullWidth
+                      label="Container 2 Title"
+                      ref={newContainer2Ref}
+                    />
+
+                    <TextField
+                      type="color"
+                      sx={{ m: 1 }}
+                      fullWidth
+                      label="Container 2 Background Color"
+                      ref={newContainer2BgColorRef}
+                    />
+                  </Stack>
                 </Stack>
-
-                <Stack flexDirection={'row'} justifyContent={'space-between'} width={'100%'} mt={1}>
-                  <TextField
-                    sx={{ m: 1 }}
-                    fullWidth
-                    label="Container 1 Title"
-                    value={container1}
-                    onChange={(e) => setContainer1(e.target.value)}
-                    InputLabelProps={{ shrink: true }}
-                  />
-                  <TextField
-                    type="color"
-                    sx={{ m: 1 }}
-                    fullWidth
-                    label="Container 1 Background Color"
-                    value={container1BgColor}
-                    onChange={(e) => setContainer1BgColor(e.target.value)}
-                    InputLabelProps={{ shrink: true }}
-                  />
-                </Stack>
-
-                <Stack flexDirection={'row'} justifyContent={'space-between'} width={'100%'} mt={3}>
-                  <TextField
-                    sx={{ m: 1 }}
-                    fullWidth
-                    label="Container 2 Title"
-                    value={container2}
-                    onChange={(e) => setContainer2(e.target.value)}
-                    InputLabelProps={{ shrink: true }}
-                  />
-
-                  <TextField
-                    type="color"
-                    sx={{ m: 1 }}
-                    fullWidth
-                    label="Container 2 Background Color"
-                    value={container2BgColor}
-                    onChange={(e) => setContainer2BgColor(e.target.value)}
-                    InputLabelProps={{ shrink: true }}
-                  />
-                </Stack>
-              </Stack>
-
-              <Stack flexDirection={'row'} justifyContent={'end'} m={2}>
-                <Button variant="contained" color="warning" size="large" onClick={saveSettings}>
-                  Save settings (App will restart)
-                </Button>
-              </Stack>
+              </Grid>
             </Grid>
+            <Stack flexDirection={'row'} justifyContent={'end'} m={2}>
+              <Button variant="contained" color="warning" size="large" onClick={saveSettings}>
+                Save settings (App will restart)
+              </Button>
+            </Stack>
           </CustomTabPanel>
 
           {/* Tab 2 */}
@@ -593,6 +722,7 @@ const Settings = ({
             </Box>
           </CustomTabPanel>
         </Box>
+
         <ToastContainer
           autoClose={2000}
           pauseOnFocusLoss={false}

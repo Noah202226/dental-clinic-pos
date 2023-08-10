@@ -359,13 +359,13 @@ const PatientList = ({
         ) : (
           patients.map((patient) => (
             <Tooltip
+              key={patient._id}
               title={`Click to view details for ${patient?.patientName}`}
               placement="top"
               TransitionComponent={Fade}
               TransitionProps={{ timeout: 600 }}
             >
               <Card
-                key={patient._id}
                 sx={{
                   mb: 1,
                   cursor: 'pointer',

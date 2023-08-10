@@ -14,6 +14,18 @@ function App() {
   // settings
   const [settingInfo, setSettingInfo] = useState()
 
+  // get settings
+  const [settingsID, setsettingsID] = useState()
+  const [loginBgColor, setLoginBgColor] = useState('#ee0eee')
+  const [loginTitle, setLoginTitle] = useState()
+  const [appTitle, setAppTitle] = useState()
+  const [homeBgColor, setHomeBgColor] = useState()
+  const [homeFontColor, setHomeFontColor] = useState()
+  const [container1, setContainer1] = useState()
+  const [container1BgColor, setContainer1BgColor] = useState()
+  const [container2, setContainer2] = useState()
+  const [container2BgColor, setContainer2BgColor] = useState()
+
   const exitApp = () => {
     ipcRenderer.send('exit-app')
   }
@@ -26,9 +38,25 @@ function App() {
     ipcRenderer.on('settings-data', (e, args) => {
       const settingsData = JSON.parse(args)
 
-      setSettingInfo(settingsData[0])
+      setSettingInfo(() => settingsData[0])
+
+      setsettingsID(settingsData[0]._id)
+      setLoginTitle(() => settingsData[0].loginTitle)
+      setLoginBgColor(() => settingsData[0]?.loginBgColor)
+      setAppTitle(() => settingsData[0]?.appTitle)
+      setHomeBgColor(settingsData[0]?.homeBgColor)
+      setHomeFontColor(settingsData[0]?.homeFontColor)
+      setContainer1(settingsData[0]?.containerTitle1)
+      setContainer1BgColor(settingsData[0]?.container1BgColor)
+      setContainer2(settingsData[0]?.containerTitle2)
+      setContainer2BgColor(settingsData[0]?.container2BgColor)
     })
   }, [])
+
+  // useEffect(() => {
+  //   setAppTitle(() => settingInfo?.appTitle)
+  //   setLoginBgColor(() => settingInfo?.loginBgColor)
+  // }, [settingInfo])
 
   return (
     <Box>
@@ -63,7 +91,29 @@ function App() {
         </Stack>
       </dialog>
       {isLogin ? (
-        <Home settingsInfo={settingInfo} userInfo={userInfo} />
+        <Home
+          settingsInfo={settingInfo}
+          userInfo={userInfo}
+          appTitle={appTitle}
+          setAppTitle={setAppTitle}
+          container1={container1}
+          setContainer1={setContainer1}
+          container1BgColor={container1BgColor}
+          setContainer1BgColor={setContainer1BgColor}
+          container2={container2}
+          setContainer2={setContainer2}
+          container2BgColor={container2BgColor}
+          setContainer2BgColor={setContainer2BgColor}
+          homeBgColor={homeBgColor}
+          setHomeBgColor={setHomeBgColor}
+          homeFontColor={homeFontColor}
+          setHomeFontColor={setHomeFontColor}
+          loginBgColor={loginBgColor}
+          setLoginBgColor={setLoginBgColor}
+          loginTitle={loginTitle}
+          setLoginTitle={setLoginTitle}
+          settingsID={settingsID}
+        />
       ) : (
         <Login setIsLogin={setIsLogin} settingsInfo={settingInfo} setUserInfo={setUserInfo} />
       )}

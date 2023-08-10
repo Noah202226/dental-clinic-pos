@@ -32,7 +32,38 @@ import Settings from './Home/Settings'
 import ExcelJSButton from './Home/ExcelJs'
 import ExpenseInfo from './Home/ExpenseInfo'
 
-const Home = ({ settingsInfo, userInfo }) => {
+const Home = ({
+  settingsInfo,
+  settingsID,
+  loginTitle,
+  setLoginTitle,
+
+  loginBgColor,
+  setLoginBgColor,
+
+  appTitle,
+  setAppTitle,
+
+  homeBgColor,
+  setHomeBgColor,
+
+  homeFontColor,
+  setHomeFontColor,
+
+  container1,
+  setContainer1,
+
+  container1BgColor,
+  setContainer1BgColor,
+
+  container2,
+  setContainer2,
+
+  container2BgColor,
+  setContainer2BgColor,
+
+  userInfo
+}) => {
   const ipcRenderer = window.ipcRenderer
 
   const [installmentPatients, setInstallmentPatients] = useState([])
@@ -636,6 +667,25 @@ const Home = ({ settingsInfo, userInfo }) => {
         setSelectedTreatment={setSelectedTreatment}
         selectedTreatmentItem={selectedTreatmentItem}
         setSelectedTreatmentItem={setSelectedTreatmentItem}
+        appTitle={appTitle}
+        setAppTitle={setAppTitle}
+        loginBgColor={loginBgColor}
+        setLoginBgColor={setLoginBgColor}
+        container1={container1}
+        setContainer1={setContainer1}
+        container1BgColor={container1BgColor}
+        setContainer1BgColor={setContainer1BgColor}
+        container2={container2}
+        setContainer2={setContainer2}
+        container2BgColor={container2BgColor}
+        setContainer2BgColor={setContainer2BgColor}
+        homeBgColor={homeBgColor}
+        setHomeBgColor={setHomeBgColor}
+        homeFontColor={homeFontColor}
+        setHomeFontColor={setHomeFontColor}
+        loginTitle={loginTitle}
+        setLoginTitle={setLoginTitle}
+        settingsID={settingsID}
       />
 
       <NewExpense expenseModalRef={expenseModalRef} />

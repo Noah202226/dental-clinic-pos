@@ -33,7 +33,7 @@ const NewExpense = ({ expenseModalRef }) => {
   useEffect(() => {
     ipcRenderer.on('new-expense-saved', (e, args) => {
       toast.warning('Expense saved', {
-        position: 'bottom-left',
+        position: 'top-right',
         containerId: 'homeToastifyContainer'
       })
       setexpenseName('')
