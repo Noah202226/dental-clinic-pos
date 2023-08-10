@@ -239,10 +239,11 @@ ipcMain.on('get-users', async (e, args) => {
   e.reply('all-users', JSON.stringify(users))
 })
 ipcMain.on('updateUserInfo', async (e, args) => {
+  console.log(args)
   try {
     const status = await Users.findByIdAndUpdate(args.id, {
       name: args.name,
-      pwd: args.pass,
+      pwd: args.pwd,
       accountType: args.accountType
     })
 

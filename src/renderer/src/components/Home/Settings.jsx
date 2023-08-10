@@ -118,7 +118,7 @@ const Settings = ({
 
   const [user, setUser] = useState('')
   const [pass, setPass] = useState('')
-  const [accountType, setAccountType] = useState('')
+  const [accountType, setAccountType] = useState('user')
 
   const [showPassword, setShowPassword] = useState(false)
 
@@ -162,6 +162,8 @@ const Settings = ({
       pwd: pass,
       accountType
     }
+
+    console.log(newUserData)
     ipcRenderer.send('updateUserInfo', newUserData)
   }
 
