@@ -1,0 +1,16 @@
+[{
+  "_id": {
+    "$oid": "67c28b35076ec76665ca9302"
+  },
+  "name": "admin",
+  "pwd": "admin",
+  "accountType": "admin"
+},
+{
+  "_id": {
+    "$oid": "67c28bc9076ec76665ca9303"
+  },
+  "name": "user",
+  "pwd": "user",
+  "accountType": "user"
+}]

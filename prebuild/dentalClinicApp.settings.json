@@ -1,0 +1,15 @@
+[{
+  "_id": {
+    "$oid": "67c2a252076ec76665ca9305"
+  },
+  "logoDir": "",
+  "appTitle": "My App",
+  "containerTitle1": "",
+  "containerTitle2": "",
+  "loginTitle": "Security Login",
+  "loginBgColor": "#d53434",
+  "container1BgColor": "#49caa4",
+  "container2BgColor": "#1933b3",
+  "homeBgColor": "#aa92ed",
+  "homeFontColor": "#3e0f0f"
+}]
